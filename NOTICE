@@ -11,4 +11,6 @@ The adaptation is Codex-native and does not preserve upstream prompt priority,
 provider identity, unavailable tool schemas, or Claude-specific filesystem
 assumptions. It paraphrases and reimplements workflow procedures for Codex.
 
-Distributed under AGPL-3.0-or-later.
+Distributed under the MIT License. Upstream source projects may carry their own
+license terms; this project keeps attribution and paraphrases workflow ideas
+instead of copying upstream prompt or documentation text.

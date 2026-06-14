@@ -29,6 +29,7 @@ From `value-for-fable`:
 
 ## Licensing Notes
 
-- `CL4R1T4S` and `value-for-fable` are AGPL-3.0-family sources. This project remains AGPL-3.0-or-later.
-- `fablize` advertises MIT licensing in its README at the inspected commit. Its code ideas are compatible with this AGPL project, but keep attribution.
+- This repository is distributed under the MIT License.
+- Upstream source projects may carry their own license terms. This adaptation keeps attribution and paraphrases workflow ideas instead of copying upstream prompt or documentation text.
+- `fablize` advertises MIT licensing in its README at the inspected commit.
 - Do not paste large sections of upstream prompt or documentation text into generated user answers. Paraphrase and cite.
