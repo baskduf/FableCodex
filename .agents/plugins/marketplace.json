@@ -1,0 +1,20 @@
+{
+  "name": "fablecodex",
+  "interface": {
+    "displayName": "FableCodex"
+  },
+  "plugins": [
+    {
+      "name": "codex-fable5",
+      "source": {
+        "source": "local",
+        "path": "./plugins/codex-fable5"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

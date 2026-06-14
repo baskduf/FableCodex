@@ -70,12 +70,37 @@ scripts/install.sh
   Local installer for the skill.
 
 install.command
-  macOS double-click installer.
+  macOS double-click skill installer.
+
+install-marketplace.command
+  macOS double-click plugin marketplace installer.
+
+.agents/plugins/marketplace.json
+  Repo-local Codex marketplace entry.
 ```
 
 ---
 
 ## Install
+
+Best Codex plugin install on macOS:
+
+```text
+Double-click install-marketplace.command
+```
+
+This copies the plugin to `~/plugins/codex-fable5`, updates the personal marketplace at `~/.agents/plugins/marketplace.json`, and runs:
+
+```bash
+codex plugin add codex-fable5@personal
+```
+
+Use this repo directly as a local marketplace:
+
+```bash
+codex plugin marketplace add ~/Desktop/FableCodex
+codex plugin add codex-fable5@fablecodex
+```
 
 Easiest on macOS:
 
