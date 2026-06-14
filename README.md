@@ -68,11 +68,27 @@ examples/litellm-fable5.yaml
 
 scripts/install.sh
   Local installer for the skill.
+
+install.command
+  macOS double-click installer.
 ```
 
 ---
 
 ## Install
+
+Easiest on macOS:
+
+```text
+Double-click install.command
+```
+
+If macOS reports a permission issue:
+
+```bash
+chmod +x install.command
+./install.command
+```
 
 From this project root:
 
