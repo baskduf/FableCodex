@@ -1,4 +1,4 @@
-<img width="400" height="400" alt="FableCodex-2" src="https://github.com/user-attachments/assets/cc3a8c78-9189-4031-8634-66744af43c0f" />
+<img width="400" height="400" alt="FableCodex" src="https://github.com/user-attachments/assets/923052d7-7a76-4791-bdab-89ebe75f01a2" />
 
 
 # Codex Fable5 Skill
