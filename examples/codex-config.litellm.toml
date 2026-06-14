@@ -1,0 +1,11 @@
+# Example only. Put provider routing in user-level ~/.codex/config.toml.
+
+model_provider = "litellm-fable5"
+model = "claude-fable-5"
+
+[model_providers.litellm-fable5]
+name = "LiteLLM Fable 5"
+base_url = "http://127.0.0.1:4000/v1"
+env_key = "LITELLM_API_KEY"
+env_key_instructions = "Set LITELLM_API_KEY to your LiteLLM virtual key or an accepted proxy key."
+wire_api = "responses"

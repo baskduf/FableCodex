@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "printf '%s\\n' '[codex-fable5] For long tasks, keep an evidence-backed plan. For debugging, reproduce first and compare hypotheses. For renderable artifacts, run and observe before completion.'",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "printf '%s\\n' '[codex-fable5] Before stopping, ensure the final answer does not promise unperformed requested work.'",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

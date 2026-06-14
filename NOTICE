@@ -1,0 +1,14 @@
+Codex Fable5 Skill
+Copyright (C) 2026 Codex Fable5 Maintainers
+
+This project adapts workflow ideas from:
+
+- elder-plinius/CL4R1T4S, commit dc626fed52b06d687cdc812d51090c95ed03d575.
+- fivetaku/fablize, commit 15912466994e71a234d18fe9c74b46a68fb6a07d.
+- itsinseong/value-for-fable, commit 35a9bd27de961a49c343f41ac47c49114d51a328.
+
+The adaptation is Codex-native and does not preserve upstream prompt priority,
+provider identity, unavailable tool schemas, or Claude-specific filesystem
+assumptions. It paraphrases and reimplements workflow procedures for Codex.
+
+Distributed under AGPL-3.0-or-later.
