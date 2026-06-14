@@ -16,7 +16,7 @@
 
 ---
 
-Codex Fable5 Skill is a Codex-native skill that brings Fable-style operating habits into Codex workflows.
+FableCodex is a Codex plugin marketplace that brings Fable-style operating habits into Codex workflows.
 
 It helps Codex work in a more structured way: inspect first, track goals, gather evidence, verify results, and report clearly.
 
@@ -39,17 +39,20 @@ It helps Codex work in a more structured way: inspect first, track goals, gather
 ## Contents
 
 ```text
-skills/codex-fable5/
-  Installable Codex skill.
-
-skills/codex-fable5/references/coverage-matrix.md
-  Source-section accountability matrix for Fable 5 adaptation.
-
-skills/codex-fable5/scripts/fable_coverage.py
-  Validates that a local source prompt's headings are accounted for by the matrix.
+.agents/plugins/marketplace.json
+  Repo-local Codex marketplace entry.
 
 plugins/codex-fable5/
-  Plugin wrapper for distributing the skill.
+  Marketplace plugin package.
+
+plugins/codex-fable5/skills/codex-fable5/
+  Codex skill bundled inside the plugin.
+
+plugins/codex-fable5/skills/codex-fable5/references/coverage-matrix.md
+  Source-section accountability matrix for Fable 5 adaptation.
+
+plugins/codex-fable5/skills/codex-fable5/scripts/fable_coverage.py
+  Validates that a local source prompt's headings are accounted for by the matrix.
 
 evals/fable-style-evals.md
   Behavioral prompts and scoring for Fable-style Codex operation.
@@ -65,35 +68,11 @@ examples/codex-config.litellm.toml
 
 examples/litellm-fable5.yaml
   Example LiteLLM config for Anthropic routing.
-
-scripts/install.sh
-  Local installer for the skill.
-
-install.command
-  macOS double-click skill installer.
-
-install-marketplace.command
-  macOS double-click plugin marketplace installer.
-
-.agents/plugins/marketplace.json
-  Repo-local Codex marketplace entry.
 ```
 
 ---
 
 ## Install
-
-Best Codex plugin install on macOS:
-
-```text
-Double-click install-marketplace.command
-```
-
-This copies the plugin to `~/plugins/codex-fable5`, updates the personal marketplace at `~/.agents/plugins/marketplace.json`, and runs:
-
-```bash
-codex plugin add codex-fable5@personal
-```
 
 Use this repo directly as a local marketplace:
 
@@ -102,38 +81,7 @@ codex plugin marketplace add ~/Desktop/FableCodex
 codex plugin add codex-fable5@fablecodex
 ```
 
-Easiest on macOS:
-
-```text
-Double-click install.command
-```
-
-If macOS reports a permission issue:
-
-```bash
-chmod +x install.command
-./install.command
-```
-
-From this project root:
-
-```bash
-./scripts/install.sh
-```
-
-By default, the installer copies the skill to:
-
-```bash
-${CODEX_HOME:-$HOME/.codex}/skills/codex-fable5
-```
-
-You can override the target:
-
-```bash
-CODEX_SKILLS_DIR="$HOME/.agents/skills" ./scripts/install.sh
-```
-
-Restart Codex after installing or updating the skill.
+Restart Codex after installing or updating the plugin.
 
 ---
 
@@ -154,7 +102,7 @@ Use $codex-fable5 to convert this Claude/Fable prompt into Codex AGENTS.md guida
 Create a simple multi-goal ledger:
 
 ```bash
-python skills/codex-fable5/scripts/codex_goals.py create --brief "Migration" \
+python plugins/codex-fable5/skills/codex-fable5/scripts/codex_goals.py create --brief "Migration" \
   --goal "inspect::Find current behavior and tests" \
   --goal "change::Implement the migration" \
   --goal "verify::Run tests and inspect output"
@@ -167,7 +115,7 @@ python skills/codex-fable5/scripts/codex_goals.py create --brief "Migration" \
 If you have a local copy of `CLAUDE-FABLE-5.md`, run:
 
 ```bash
-python skills/codex-fable5/scripts/fable_coverage.py \
+python plugins/codex-fable5/skills/codex-fable5/scripts/fable_coverage.py \
   --source /path/to/CLAUDE-FABLE-5.md
 ```
 
@@ -180,7 +128,7 @@ The target is 100% source-heading accounting. That means every named source sect
 For model routing, read:
 
 ```text
-skills/codex-fable5/references/provider-bridge.md
+plugins/codex-fable5/skills/codex-fable5/references/provider-bridge.md
 ```
 
 You need valid Anthropic access and a working OpenAI-compatible gateway such as LiteLLM.
@@ -203,4 +151,4 @@ It paraphrases and adapts workflow ideas instead of reproducing the source promp
 
 ## License
 
-AGPL-3.0-or-later. See `LICENSE`, `NOTICE`, and `skills/codex-fable5/references/provenance.md`.
+AGPL-3.0-or-later. See `LICENSE`, `NOTICE`, and `plugins/codex-fable5/skills/codex-fable5/references/provenance.md`.
