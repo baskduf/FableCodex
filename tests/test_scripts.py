@@ -64,6 +64,51 @@ class ScriptTests(unittest.TestCase):
         self.assertIn("AGPL-3.0-or-later", readme)
         self.assertIn("AGPL-3.0-or-later", notice)
 
+    def test_oss_community_files_exist(self) -> None:
+        required_paths = [
+            "CODE_OF_CONDUCT.md",
+            "CHANGELOG.md",
+            "CONTRIBUTING.md",
+            "GOVERNANCE.md",
+            "ROADMAP.md",
+            "SECURITY.md",
+            "SUPPORT.md",
+            ".gitignore",
+            ".github/CODEOWNERS",
+            ".github/dependabot.yml",
+            ".github/ISSUE_TEMPLATE/bug_report.yml",
+            ".github/ISSUE_TEMPLATE/feature_request.yml",
+            ".github/ISSUE_TEMPLATE/config.yml",
+            ".github/pull_request_template.md",
+            ".github/workflows/ci.yml",
+            "docs/RELEASING.md",
+        ]
+        for relative in required_paths:
+            with self.subTest(path=relative):
+                path = ROOT / relative
+                self.assertTrue(path.exists(), f"missing {relative}")
+                self.assertGreater(path.stat().st_size, 0, f"empty {relative}")
+
+    def test_ci_workflow_runs_project_verification(self) -> None:
+        workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+
+        self.assertIn("actions/checkout@v6", workflow)
+        self.assertIn("actions/setup-python@v6", workflow)
+        self.assertIn("python -m unittest discover -s tests -v", workflow)
+        self.assertIn("python -m py_compile", workflow)
+        self.assertIn("fable_coverage.py", workflow)
+        self.assertIn('python-version: ["3.11", "3.12", "3.13"]', workflow)
+
+    def test_repo_hygiene_files_cover_local_artifacts(self) -> None:
+        gitignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
+        codeowners = (ROOT / ".github" / "CODEOWNERS").read_text(encoding="utf-8")
+        dependabot = (ROOT / ".github" / "dependabot.yml").read_text(encoding="utf-8")
+
+        self.assertIn(".codex-fable5/", gitignore)
+        self.assertIn("__pycache__/", gitignore)
+        self.assertIn("* @baskduf", codeowners)
+        self.assertIn('package-ecosystem: "github-actions"', dependabot)
+
     def test_coverage_matrix_is_valid(self) -> None:
         script = SCRIPTS / "fable_coverage.py"
         result = subprocess.run(

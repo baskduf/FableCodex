@@ -1,0 +1,45 @@
+name: Bug report
+description: Report a reproducible problem in FableCodex.
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Do not include secrets, tokens, private prompt text, or exploit details.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What went wrong?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+      description: Include exact commands, prompts, or files when possible.
+      placeholder: |
+        1. Run ...
+        2. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Python version, Codex/plugin version, and relevant command output.
+    validations:
+      required: false

@@ -11,6 +11,9 @@
     <img alt="Codex Skill" src="https://img.shields.io/badge/Codex-Skill-black?style=for-the-badge" />
     <img alt="Claude Style" src="https://img.shields.io/badge/Claude--style-Guidance-D97745?style=for-the-badge" />
     <img alt="License AGPL-3.0-or-later" src="https://img.shields.io/badge/License-AGPL--3.0--or--later-blue?style=for-the-badge" />
+    <a href="https://github.com/baskduf/FableCodex/actions/workflows/ci.yml">
+      <img alt="CI" src="https://img.shields.io/github/actions/workflow/status/baskduf/FableCodex/ci.yml?branch=main&label=CI&style=for-the-badge" />
+    </a>
   </p>
 </div>
 
@@ -59,6 +62,18 @@ evals/fable-style-evals.md
 
 tests/test_scripts.py
   Stdlib-only regression tests for manifests, scripts, and license text.
+
+.github/workflows/ci.yml
+  GitHub Actions CI for tests, script compilation, and coverage matrix validation.
+
+.github/CODEOWNERS, .github/dependabot.yml
+  Maintainer ownership and GitHub Actions dependency update automation.
+
+CONTRIBUTING.md, CODE_OF_CONDUCT.md, GOVERNANCE.md, SECURITY.md, SUPPORT.md, ROADMAP.md, CHANGELOG.md
+  OSS contribution, conduct, governance, security, support, planning, and release notes.
+
+docs/RELEASING.md
+  Release checklist for plugin version updates.
 
 examples/AGENTS.md
   Optional repo guidance for persistent Fable-style behavior.
@@ -133,6 +148,16 @@ Run the stdlib-only test suite:
 ```bash
 python -m unittest discover -s tests -v
 ```
+
+---
+
+## Community
+
+- Read `CONTRIBUTING.md` before opening issues or pull requests.
+- Use `CODE_OF_CONDUCT.md` as the participation baseline.
+- Follow `SECURITY.md` for vulnerability reports and provider credential concerns.
+- Use `GOVERNANCE.md` and `ROADMAP.md` to understand project direction and decision-making.
+- Use `docs/RELEASING.md` when cutting plugin releases.
 
 ---
 
