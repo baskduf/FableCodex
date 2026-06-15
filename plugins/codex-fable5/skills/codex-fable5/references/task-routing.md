@@ -20,13 +20,13 @@ Use `scripts/codex_goals.py` when there are multiple dependent stories and the t
 Example:
 
 ```bash
-python plugins/codex-fable5/skills/codex-fable5/scripts/codex_goals.py create --brief "Add CSV import" \
+python3 plugins/codex-fable5/skills/codex-fable5/scripts/codex_goals.py create --brief "Add CSV import" \
   --goal "inspect::Find current import flow and tests" \
   --goal "implement::Add CSV parser and UI path" \
   --goal "verify::Run tests and a sample import"
-python plugins/codex-fable5/skills/codex-fable5/scripts/codex_goals.py next
-python plugins/codex-fable5/skills/codex-fable5/scripts/codex_goals.py checkpoint --id G001 --status complete --evidence "Read importer.ts and import.test.ts"
-python plugins/codex-fable5/skills/codex-fable5/scripts/codex_goals.py next
+python3 plugins/codex-fable5/skills/codex-fable5/scripts/codex_goals.py next
+python3 plugins/codex-fable5/skills/codex-fable5/scripts/codex_goals.py checkpoint --id G001 --status complete --evidence "Read importer.ts and import.test.ts"
+python3 plugins/codex-fable5/skills/codex-fable5/scripts/codex_goals.py next
 ```
 
 Rules:

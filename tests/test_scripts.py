@@ -42,6 +42,26 @@ class ScriptTests(unittest.TestCase):
                 parsed = json.loads(path.read_text(encoding="utf-8"))
                 self.assertIsInstance(parsed, dict)
 
+    def test_marketplace_plugin_paths_resolve_to_skill(self) -> None:
+        marketplace_path = ROOT / ".agents" / "plugins" / "marketplace.json"
+        marketplace = json.loads(marketplace_path.read_text(encoding="utf-8"))
+        root = ROOT.resolve()
+        for plugin_entry in marketplace["plugins"]:
+            with self.subTest(plugin=plugin_entry["name"]):
+                plugin_root = (ROOT / plugin_entry["source"]["path"]).resolve()
+                self.assertTrue(plugin_root.is_relative_to(root))
+
+                plugin_manifest_path = plugin_root / ".codex-plugin" / "plugin.json"
+                plugin_manifest = json.loads(plugin_manifest_path.read_text(encoding="utf-8"))
+                skills_root = (plugin_root / plugin_manifest["skills"]).resolve()
+                skill_path = skills_root / plugin_manifest["name"] / "SKILL.md"
+
+                self.assertTrue(plugin_root.is_dir())
+                self.assertTrue(plugin_manifest_path.is_file())
+                self.assertTrue(skills_root.is_relative_to(plugin_root))
+                self.assertTrue(skills_root.is_dir())
+                self.assertTrue(skill_path.is_file())
+
     def test_license_contains_full_agpl_text(self) -> None:
         text = (ROOT / "LICENSE").read_text(encoding="utf-8")
 
@@ -94,8 +114,8 @@ class ScriptTests(unittest.TestCase):
 
         self.assertIn("actions/checkout@v6", workflow)
         self.assertIn("actions/setup-python@v6", workflow)
-        self.assertIn("python -m unittest discover -s tests -v", workflow)
-        self.assertIn("python -m py_compile", workflow)
+        self.assertIn("python3 -m unittest discover -s tests -v", workflow)
+        self.assertIn("python3 -m py_compile", workflow)
         self.assertIn("fable_coverage.py", workflow)
         self.assertIn('python-version: ["3.11", "3.12", "3.13"]', workflow)
 
@@ -234,6 +254,129 @@ class ScriptTests(unittest.TestCase):
             status = run("status")
             self.assertEqual(status.returncode, 0, status.stderr)
             self.assertIn("2/2 complete", status.stdout)
+
+    def test_goal_ledger_failed_story_is_not_reported_complete(self) -> None:
+        script = SCRIPTS / "codex_goals.py"
+        with tempfile.TemporaryDirectory() as tmp:
+            cwd = Path(tmp)
+
+            def run(*args: str) -> subprocess.CompletedProcess[str]:
+                return subprocess.run(
+                    [sys.executable, str(script), *args],
+                    cwd=cwd,
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
+
+            created = run("create", "--brief", "Smoke", "--goal", "inspect::Check state")
+            self.assertEqual(created.returncode, 0, created.stderr)
+
+            first = run("next")
+            self.assertEqual(first.returncode, 0, first.stderr)
+
+            failed = run("checkpoint", "--id", "G001", "--status", "failed")
+            self.assertEqual(failed.returncode, 0, failed.stderr)
+            self.assertIn("plan is not complete", failed.stdout)
+            self.assertNotIn("all stories complete", failed.stdout)
+
+            next_story = run("next")
+            self.assertEqual(next_story.returncode, 0, next_story.stderr)
+            self.assertIn("Reopened G001 from failed", next_story.stdout)
+            self.assertNotIn("all stories complete", next_story.stdout + next_story.stderr)
+
+            recovered = run(
+                "checkpoint",
+                "--id",
+                "G001",
+                "--status",
+                "complete",
+                "--evidence",
+                "retry evidence",
+                "--verify-cmd",
+                "smoke",
+                "--verify-evidence",
+                "accepted",
+            )
+            self.assertEqual(recovered.returncode, 0, recovered.stderr)
+            self.assertIn("all stories complete", recovered.stdout)
+
+    def test_goal_ledger_failed_story_blocks_later_pending_stories(self) -> None:
+        script = SCRIPTS / "codex_goals.py"
+        with tempfile.TemporaryDirectory() as tmp:
+            cwd = Path(tmp)
+
+            def run(*args: str) -> subprocess.CompletedProcess[str]:
+                return subprocess.run(
+                    [sys.executable, str(script), *args],
+                    cwd=cwd,
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
+
+            created = run(
+                "create",
+                "--brief",
+                "Smoke",
+                "--goal",
+                "inspect::Check state",
+                "--goal",
+                "verify::Confirm final state",
+            )
+            self.assertEqual(created.returncode, 0, created.stderr)
+            self.assertEqual(run("next").returncode, 0)
+
+            failed = run("checkpoint", "--id", "G001", "--status", "failed")
+            self.assertEqual(failed.returncode, 0, failed.stderr)
+            self.assertIn("open stories remain blocked", failed.stdout)
+
+            next_story = run("next")
+            self.assertEqual(next_story.returncode, 0, next_story.stderr)
+            self.assertIn("Reopened G001 from failed", next_story.stdout)
+            self.assertIn("G001 inspect", next_story.stdout)
+            self.assertNotIn("G002", next_story.stdout + next_story.stderr)
+
+            recovered = run(
+                "checkpoint",
+                "--id",
+                "G001",
+                "--status",
+                "complete",
+                "--evidence",
+                "retry evidence",
+            )
+            self.assertEqual(recovered.returncode, 0, recovered.stderr)
+
+            next_after_recovery = run("next")
+            self.assertEqual(next_after_recovery.returncode, 0, next_after_recovery.stderr)
+            self.assertIn("G002 verify", next_after_recovery.stdout)
+
+    def test_goal_ledger_blocked_story_can_be_reopened(self) -> None:
+        script = SCRIPTS / "codex_goals.py"
+        with tempfile.TemporaryDirectory() as tmp:
+            cwd = Path(tmp)
+
+            def run(*args: str) -> subprocess.CompletedProcess[str]:
+                return subprocess.run(
+                    [sys.executable, str(script), *args],
+                    cwd=cwd,
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
+
+            created = run("create", "--brief", "Smoke", "--goal", "inspect::Check state")
+            self.assertEqual(created.returncode, 0, created.stderr)
+            self.assertEqual(run("next").returncode, 0)
+
+            blocked = run("checkpoint", "--id", "G001", "--status", "blocked")
+            self.assertEqual(blocked.returncode, 0, blocked.stderr)
+            self.assertIn("plan is not complete", blocked.stdout)
+
+            reopened = run("next")
+            self.assertEqual(reopened.returncode, 0, reopened.stderr)
+            self.assertIn("Reopened G001 from blocked", reopened.stdout)
 
     def test_litellm_config_generation(self) -> None:
         plain = self.make_litellm_config.build_config("claude-test", "test-alias")

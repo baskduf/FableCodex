@@ -16,7 +16,7 @@ Use LiteLLM Proxy when you need a practical OpenAI-compatible gateway for Anthro
 Typical flow:
 
 ```bash
-python -m pip install "litellm[proxy]"
+python3 -m pip install "litellm[proxy]"
 export ANTHROPIC_API_KEY="sk-ant-..."
 litellm --config litellm-fable5.yaml --host 127.0.0.1 --port 4000
 ```
@@ -24,7 +24,7 @@ litellm --config litellm-fable5.yaml --host 127.0.0.1 --port 4000
 Generate a starter LiteLLM config:
 
 ```bash
-python plugins/codex-fable5/skills/codex-fable5/scripts/make_litellm_config.py \
+python3 plugins/codex-fable5/skills/codex-fable5/scripts/make_litellm_config.py \
   --model claude-fable-5 \
   --alias claude-fable-5 \
   --output litellm-fable5.yaml
