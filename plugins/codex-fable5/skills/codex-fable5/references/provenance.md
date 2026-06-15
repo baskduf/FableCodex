@@ -8,6 +8,11 @@ This project is a Codex-native adaptation. It borrows ideas, not source prompt p
 - `fivetaku/fablize`, commit `15912466994e71a234d18fe9c74b46a68fb6a07d`.
 - `itsinseong/value-for-fable`, commit `35a9bd27de961a49c343f41ac47c49114d51a328`.
 
+## Currentness Notes
+
+- Re-check provider facts before relying on examples that name a live model. Anthropic announced Claude Fable 5 and Claude Mythos 5 on June 9, 2026 ([announcement](https://www.anthropic.com/news/claude-fable-5-mythos-5)), and its public release notes later reported access suspension on June 12, 2026 ([release notes](https://support.claude.com/en/articles/12138966-release-notes)). Treat model names in this repo as routing examples unless current official docs and the user's account prove availability.
+- Do not import source-prompt dates as active dates. Use the current Codex environment date and current official docs for product, pricing, access, model, API, and policy claims.
+
 ## Adapted Ideas
 
 From `fablize`:

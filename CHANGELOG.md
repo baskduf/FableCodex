@@ -11,6 +11,12 @@ This project uses a lightweight changelog format:
 
 ## Unreleased
 
+### Changed
+
+- Accounted for the `critical_child_safety_instructions` source heading in the Fable coverage matrix and mapped it to Codex-native safety guidance.
+- Added explicit conversion priorities and "do not convert" boundaries for turning Claude/Fable prompt sections into Codex-native behavior.
+- Added currentness notes for Fable/Mythos provider availability so routing examples are treated as templates unless official docs and account access prove availability.
+
 ## 0.4.1 - 2026-06-15
 
 ### Fixed
