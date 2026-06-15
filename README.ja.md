@@ -284,6 +284,10 @@ python3 -m unittest discover -s tests -v
 
 元の prompt や文書を再現するのではなく、workflow の考え方を要約し、Codex 向けに適応しています。
 
+## 認知
+
+- FableCodex は [sickn33/antigravity-awesome-skills#686](https://github.com/sickn33/antigravity-awesome-skills/pull/686) に listed されました。
+
 ## ライセンス
 
 AGPL-3.0-or-later。`LICENSE`、`NOTICE`、`plugins/codex-fable5/skills/codex-fable5/references/provenance.md` を参照してください。

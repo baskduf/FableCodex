@@ -284,6 +284,10 @@ This is a Codex-native adaptation inspired by:
 
 It paraphrases and adapts workflow ideas instead of reproducing source prompts or documentation.
 
+## Recognition
+
+- FableCodex was listed in [sickn33/antigravity-awesome-skills#686](https://github.com/sickn33/antigravity-awesome-skills/pull/686).
+
 ## License
 
 AGPL-3.0-or-later. See `LICENSE`, `NOTICE`, and `plugins/codex-fable5/skills/codex-fable5/references/provenance.md`.

@@ -284,6 +284,10 @@ python3 -m unittest discover -s tests -v
 
 它会转述并适配工作流思想，而不是复刻原始 prompt 或文档。
 
+## 认可
+
+- FableCodex 已在 [sickn33/antigravity-awesome-skills#686](https://github.com/sickn33/antigravity-awesome-skills/pull/686) 中 listed。
+
 ## 许可证
 
 AGPL-3.0-or-later。请参阅 `LICENSE`、`NOTICE` 和 `plugins/codex-fable5/skills/codex-fable5/references/provenance.md`。
