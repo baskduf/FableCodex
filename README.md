@@ -1,5 +1,6 @@
 <div align="center">
-  <img width="220" height="220" alt="Codex Fable5" src="https://github.com/user-attachments/assets/923052d7-7a76-4791-bdab-89ebe75f01a2" />
+<img width="280" height="280" alt="ChatGPT Image 2026년 6월 15일 오후 09_26_47-2" src="https://github.com/user-attachments/assets/7dd154af-f885-49ca-8d94-33756e340920" />
+
 
   <h1>FableCodex</h1>
 
