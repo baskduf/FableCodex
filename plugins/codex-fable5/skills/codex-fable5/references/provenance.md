@@ -24,6 +24,7 @@ From `value-for-fable`:
 - Outcome-first readable communication.
 - Clue-first diagnosis and cheapest discriminating measurement.
 - Optional 2-pass review for high-cost misses.
+- Evidence-backed findings closeout for review issues.
 - Long-session drift awareness.
 - Avoiding over-compression when readability and completeness matter.
 

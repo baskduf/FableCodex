@@ -11,6 +11,15 @@ This project uses a lightweight changelog format:
 
 ## Unreleased
 
+### Added
+
+- Added `codex_findings.py` to track evidence-backed review findings and gate final completion.
+- Added the `codex-fable5` wrapper command for checkout-based terminal use, with `codex-findings` and `codex-goals` as advanced aliases.
+
+### Changed
+
+- Integrated open or blocked findings into the final `codex_goals.py` checkpoint gate.
+
 ## 0.3.1 - 2026-06-15
 
 ### Added

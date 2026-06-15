@@ -1,7 +1,7 @@
 {
   "name": "codex-fable5",
   "version": "0.3.1",
-  "description": "Fable-style Codex workflow with source-section coverage, goal gates, verification grounding, VFF routing, and optional provider bridge guidance.",
+  "description": "Fable-style Codex workflow with source-section coverage, goal and findings gates, verification grounding, VFF routing, and optional provider bridge guidance.",
   "author": {
     "name": "Codex Fable5 Maintainers"
   },
@@ -11,7 +11,7 @@
   "interface": {
     "displayName": "Codex Fable5",
     "shortDescription": "Fable-style gates and routing.",
-    "longDescription": "Codex Fable5 packages a Codex-native skill that adapts Claude Fable 5, fablize, and Value-for-Fable ideas into a tool-first workflow with source-section coverage accounting, evidence checkpoints, verification grounding, clue-first diagnosis, cost-aware routing, optional 2-pass review, and LiteLLM provider bridge guidance for users who already have authorized Anthropic model access.",
+    "longDescription": "Codex Fable5 packages a Codex-native skill that adapts Claude Fable 5, fablize, and Value-for-Fable ideas into a tool-first workflow with source-section coverage accounting, evidence checkpoints, review findings gates, verification grounding, clue-first diagnosis, cost-aware routing, optional 2-pass review, and LiteLLM provider bridge guidance for users who already have authorized Anthropic model access.",
     "developerName": "Codex Fable5 Maintainers",
     "category": "Productivity",
     "capabilities": ["Skills"],

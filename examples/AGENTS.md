@@ -12,6 +12,7 @@ Use this guidance when you want a repo to default to a Fable-style Codex workflo
 - Implement requested changes when feasible; do not stop at a proposal unless asked.
 - Verify every meaningful change with tests, lint, typecheck, command output, screenshots, or source inspection.
 - If verification fails, iterate before returning the task.
+- For review-sensitive work, track evidence-backed findings explicitly and close them with verification evidence before final completion.
 
 ## Investigation And Diagnosis
 
@@ -46,6 +47,7 @@ Use this guidance when you want a repo to default to a Fable-style Codex workflo
 - Lead with the outcome or recommendation.
 - Prefer readable prose over compressed fragments.
 - Use 2-pass review only for high-cost misses: missing requirements, factual/numeric errors, unexplained clues, or length/scope violations.
+- Treat accepted review findings as repair work, not suggestions to remember informally.
 
 ## Boundaries
 

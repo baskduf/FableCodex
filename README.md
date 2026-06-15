@@ -32,6 +32,7 @@ It helps Codex work in a more structured way: inspect first, track goals, gather
 
 - Adds a Fable-style, tool-first agent loop for coding and research tasks.
 - Provides a simple goal ledger with evidence checkpoints.
+- Provides a findings ledger for review issues that must be resolved before final completion.
 - Encourages conclusion-first answers, clue-first debugging, and cheapest useful checks first.
 - Adds an optional final verification gate before claiming success.
 - Tracks `CLAUDE-FABLE-5.md` source-heading coverage with explicit Codex decisions.
@@ -84,14 +85,40 @@ $codex-fable5 を使って、このプロジェクトを分析してください
 請使用 $codex-fable5 分析這個專案。
 ```
 
-Create a simple multi-goal ledger:
+Use the local helper from a checkout:
 
 ```bash
-python3 plugins/codex-fable5/skills/codex-fable5/scripts/codex_goals.py create --brief "Migration" \
+export PATH="$PWD/plugins/codex-fable5/bin:$PATH"
+codex-fable5 status
+```
+
+Without changing `PATH`, run them by path:
+
+```bash
+plugins/codex-fable5/bin/codex-fable5 status
+```
+
+For longer work, create a goal ledger:
+
+```bash
+codex-fable5 goals create --brief "Migration" \
   --goal "inspect::Find current behavior and tests" \
   --goal "change::Implement the migration" \
   --goal "verify::Run tests and inspect output"
 ```
+
+Track review findings before final completion:
+
+```bash
+codex-fable5 findings add \
+  --title "Unresolved review issue" \
+  --severity high \
+  --source subagent \
+  --evidence "Review found a missing final gate."
+codex-fable5 findings gate
+```
+
+Final goal completion also fails while open or blocked findings remain. `codex-goals` and `codex-findings` are still available as advanced aliases.
 
 ---
 

@@ -52,6 +52,7 @@ Use this skill to translate Fable-style behavior into Codex behavior. It does no
    - Prefer real tools, tests, rendered artifacts, and current sources over memory.
    - Implement the requested change, not only a proposal, unless the user clearly asks for analysis only.
    - Verify with the narrowest strong evidence that covers the requirement: tests, lint, typecheck, screenshots, command output, source inspection, or connector readback.
+   - For review-sensitive work, use `scripts/codex_findings.py` to track evidence-backed findings and require the findings gate to pass before final completion.
    - If verification fails, iterate once or more before handing the issue back.
    - Summarize what changed, what was verified, and any residual risk.
 
@@ -102,5 +103,7 @@ Use the smallest durable surface that fits:
 ## Scripts
 
 - Run `scripts/codex_goals.py` for a local, stdlib-only multi-story ledger with evidence checkpoints and a final verification gate.
+- Run `scripts/codex_findings.py` for a local, stdlib-only review findings ledger. Final `codex_goals.py` checkpoints fail while open or blocked findings remain.
+- For user-facing terminal use from a checkout, add `plugins/codex-fable5/bin` to `PATH` and run `codex-fable5 status`, `codex-fable5 goals ...`, or `codex-fable5 findings ...`.
 - Run `scripts/fable_coverage.py --source /path/to/CLAUDE-FABLE-5.md` to verify that every source heading is accounted for in `references/coverage-matrix.md`.
 - Run `scripts/make_litellm_config.py` to generate a LiteLLM config for an Anthropic model alias. Use this only after confirming the user has a valid Anthropic key and model access.

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -13,6 +14,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SKILL_ROOT = ROOT / "plugins" / "codex-fable5" / "skills" / "codex-fable5"
 SCRIPTS = SKILL_ROOT / "scripts"
+BIN = ROOT / "plugins" / "codex-fable5" / "bin"
 
 
 def load_script(name: str):
@@ -29,6 +31,7 @@ class ScriptTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.fable_coverage = load_script("fable_coverage")
+        cls.codex_findings = load_script("codex_findings")
         cls.make_litellm_config = load_script("make_litellm_config")
 
     def test_manifest_json_files_are_valid(self) -> None:
@@ -126,6 +129,10 @@ class ScriptTests(unittest.TestCase):
         self.assertIn("actions/setup-python@v6", workflow)
         self.assertIn("python3 -m unittest discover -s tests -v", workflow)
         self.assertIn("python3 -m py_compile", workflow)
+        self.assertIn("codex_findings.py", workflow)
+        self.assertIn("sh -n plugins/codex-fable5/bin/codex-fable5", workflow)
+        self.assertIn("sh -n plugins/codex-fable5/bin/codex-findings", workflow)
+        self.assertIn("sh -n plugins/codex-fable5/bin/codex-goals", workflow)
         self.assertIn("fable_coverage.py", workflow)
         self.assertIn('python-version: ["3.11", "3.12", "3.13"]', workflow)
 
@@ -151,6 +158,96 @@ class ScriptTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("coverage matrix valid", result.stdout)
         self.assertIn("implemented=", result.stdout)
+
+    def test_user_facing_wrappers_run_from_path(self) -> None:
+        env = {**os.environ, "PATH": f"{BIN}{os.pathsep}{os.environ['PATH']}"}
+        for command in ["codex-fable5", "codex-findings", "codex-goals"]:
+            with self.subTest(command=command):
+                wrapper = BIN / command
+                self.assertTrue(wrapper.is_file())
+                self.assertTrue(os.access(wrapper, os.X_OK))
+
+                syntax = subprocess.run(
+                    ["sh", "-n", str(wrapper)],
+                    cwd=ROOT,
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
+                self.assertEqual(syntax.returncode, 0, syntax.stderr)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            status = subprocess.run(
+                ["codex-fable5", "status"],
+                cwd=tmp,
+                env=env,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(status.returncode, 0, status.stderr)
+            self.assertIn("0 findings", status.stdout)
+            self.assertIn("no goal plan", status.stdout)
+
+            created = subprocess.run(
+                [
+                    "codex-fable5",
+                    "goals",
+                    "create",
+                    "--brief",
+                    "Wrapper smoke",
+                    "--goal",
+                    "inspect::Check wrapper path",
+                ],
+                cwd=tmp,
+                env=env,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(created.returncode, 0, created.stderr)
+            self.assertIn("plan created", created.stdout)
+
+            started = subprocess.run(
+                ["codex-fable5", "goals", "next"],
+                cwd=tmp,
+                env=env,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(started.returncode, 0, started.stderr)
+
+            added = subprocess.run(
+                [
+                    "codex-fable5",
+                    "findings",
+                    "add",
+                    "--title",
+                    "Wrapper finding",
+                    "--evidence",
+                    "PATH wrapper should call the findings script.",
+                ],
+                cwd=tmp,
+                env=env,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(added.returncode, 0, added.stderr)
+            self.assertIn("goal=G001", added.stdout)
+
+            status_with_plan = subprocess.run(
+                ["codex-fable5", "status"],
+                cwd=tmp,
+                env=env,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(status_with_plan.returncode, 0, status_with_plan.stderr)
+            self.assertIn("1 open", status_with_plan.stdout)
+            self.assertIn("0/1 complete", status_with_plan.stdout)
 
     def test_coverage_helpers_parse_headings_and_matrix_rows(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -387,6 +484,211 @@ class ScriptTests(unittest.TestCase):
             reopened = run("next")
             self.assertEqual(reopened.returncode, 0, reopened.stderr)
             self.assertIn("Reopened G001 from blocked", reopened.stdout)
+
+    def test_findings_flow_blocks_gate_until_resolved(self) -> None:
+        script = SCRIPTS / "codex_findings.py"
+        with tempfile.TemporaryDirectory() as tmp:
+            cwd = Path(tmp)
+
+            def run(*args: str) -> subprocess.CompletedProcess[str]:
+                return subprocess.run(
+                    [sys.executable, str(script), *args],
+                    cwd=cwd,
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
+
+            added = run(
+                "add",
+                "--title",
+                "Final gate ignores unresolved review issue",
+                "--severity",
+                "high",
+                "--source",
+                "subagent",
+                "--evidence",
+                "Review found an accepted finding without a closeout gate.",
+            )
+            self.assertEqual(added.returncode, 0, added.stderr)
+            self.assertIn("added F001", added.stdout)
+
+            gate_failed = run("gate")
+            self.assertNotEqual(gate_failed.returncode, 0)
+            self.assertIn("findings gate failed", gate_failed.stdout)
+            self.assertIn("F001 [open] high", gate_failed.stdout)
+
+            missing_verification = run(
+                "resolve",
+                "--id",
+                "F001",
+                "--evidence",
+                "Added findings gate.",
+            )
+            self.assertNotEqual(missing_verification.returncode, 0)
+            self.assertIn("verify-evidence", missing_verification.stderr)
+
+            resolved = run(
+                "resolve",
+                "--id",
+                "F001",
+                "--evidence",
+                "Added findings gate.",
+                "--verify-cmd",
+                "python3 -m unittest discover -s tests -v",
+                "--verify-evidence",
+                "targeted tests passed",
+            )
+            self.assertEqual(resolved.returncode, 0, resolved.stderr)
+
+            gate_passed = run("gate")
+            self.assertEqual(gate_passed.returncode, 0, gate_passed.stderr)
+            self.assertIn("findings gate passed", gate_passed.stdout)
+
+            status = run("status")
+            self.assertEqual(status.returncode, 0, status.stderr)
+            self.assertIn("1 resolved", status.stdout)
+
+    def test_findings_auto_attach_to_active_goal_and_blocked_gate_policy(self) -> None:
+        goals_script = SCRIPTS / "codex_goals.py"
+        findings_script = SCRIPTS / "codex_findings.py"
+        with tempfile.TemporaryDirectory() as tmp:
+            cwd = Path(tmp)
+
+            def run(script: Path, *args: str) -> subprocess.CompletedProcess[str]:
+                return subprocess.run(
+                    [sys.executable, str(script), *args],
+                    cwd=cwd,
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
+
+            self.assertEqual(
+                run(
+                    goals_script,
+                    "create",
+                    "--brief",
+                    "Smoke",
+                    "--goal",
+                    "inspect::Check state",
+                ).returncode,
+                0,
+            )
+            self.assertEqual(run(goals_script, "next").returncode, 0)
+
+            added = run(
+                findings_script,
+                "add",
+                "--title",
+                "Unresolved issue tied to active goal",
+                "--evidence",
+                "The active goal should be inferred when no --goal is provided.",
+            )
+            self.assertEqual(added.returncode, 0, added.stderr)
+            self.assertIn("goal=G001", added.stdout)
+
+            findings = json.loads((cwd / ".codex-fable5" / "findings.json").read_text())
+            self.assertEqual(findings["findings"][0]["goal"], "G001")
+
+            blocked = run(
+                findings_script,
+                "block",
+                "--id",
+                "F001",
+                "--reason",
+                "Needs user decision.",
+            )
+            self.assertEqual(blocked.returncode, 0, blocked.stderr)
+
+            default_gate = run(findings_script, "gate")
+            self.assertNotEqual(default_gate.returncode, 0)
+            self.assertIn("F001 [blocked]", default_gate.stdout)
+
+            allow_blocked_gate = run(findings_script, "gate", "--allow-blocked")
+            self.assertEqual(allow_blocked_gate.returncode, 0, allow_blocked_gate.stderr)
+
+    def test_goal_final_checkpoint_requires_findings_gate(self) -> None:
+        goals_script = SCRIPTS / "codex_goals.py"
+        findings_script = SCRIPTS / "codex_findings.py"
+        with tempfile.TemporaryDirectory() as tmp:
+            cwd = Path(tmp)
+
+            def run(script: Path, *args: str) -> subprocess.CompletedProcess[str]:
+                return subprocess.run(
+                    [sys.executable, str(script), *args],
+                    cwd=cwd,
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
+
+            created = run(
+                goals_script,
+                "create",
+                "--brief",
+                "Smoke",
+                "--goal",
+                "verify::Confirm final state",
+            )
+            self.assertEqual(created.returncode, 0, created.stderr)
+            self.assertEqual(run(goals_script, "next").returncode, 0)
+
+            added = run(
+                findings_script,
+                "add",
+                "--title",
+                "Open review issue",
+                "--evidence",
+                "The final checkpoint should fail while this is open.",
+            )
+            self.assertEqual(added.returncode, 0, added.stderr)
+
+            blocked_checkpoint = run(
+                goals_script,
+                "checkpoint",
+                "--id",
+                "G001",
+                "--status",
+                "complete",
+                "--evidence",
+                "final evidence",
+                "--verify-cmd",
+                "smoke",
+                "--verify-evidence",
+                "accepted",
+            )
+            self.assertNotEqual(blocked_checkpoint.returncode, 0)
+            self.assertIn("final story requires findings gate", blocked_checkpoint.stderr)
+            self.assertIn("F001", blocked_checkpoint.stderr)
+
+            resolved = run(
+                findings_script,
+                "resolve",
+                "--id",
+                "F001",
+                "--evidence",
+                "Closed the review issue.",
+                "--verify-evidence",
+                "manual verification accepted",
+            )
+            self.assertEqual(resolved.returncode, 0, resolved.stderr)
+
+            complete = run(
+                goals_script,
+                "checkpoint",
+                "--id",
+                "G001",
+                "--status",
+                "complete",
+                "--evidence",
+                "final evidence",
+                "--verify-cmd",
+                "smoke",
+                "--verify-evidence",
+                "accepted",
+            )
+            self.assertEqual(complete.returncode, 0, complete.stderr)
 
     def test_litellm_config_generation(self) -> None:
         plain = self.make_litellm_config.build_config("claude-test", "test-alias")

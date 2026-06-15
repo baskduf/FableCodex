@@ -11,22 +11,25 @@ This reference adapts the useful procedural ideas from `fablize` and `value-for-
 | HTML, CSS, SVG, game, canvas, chart, UI, animation, local app | Use verification grounding: run, observe, fix, re-run after changes. |
 | Diagnosis, architecture decision, product/technical tradeoff | Use VFF operating structure: conclusion first, clue-first hypothesis, cheapest discriminating measurement. |
 | High-stakes or deep unfamiliar domain | Suggest higher reasoning or stronger model; optionally use 2-pass review. |
+| Review requested, failed/uncertain verification, security-sensitive change, or multi-file work with costly misses | Use the findings ledger and gate. |
 | Simple one-step edit or factual answer | Keep the normal Codex loop; do not add goal files or extra process. |
 
 ## Goal Ledger
 
 Use `scripts/codex_goals.py` when there are multiple dependent stories and the task benefits from resume-safe state.
 
+For user-facing terminal use from a checkout, add `plugins/codex-fable5/bin` to `PATH` and use `codex-fable5 goals`.
+
 Example:
 
 ```bash
-python3 plugins/codex-fable5/skills/codex-fable5/scripts/codex_goals.py create --brief "Add CSV import" \
+codex-fable5 goals create --brief "Add CSV import" \
   --goal "inspect::Find current import flow and tests" \
   --goal "implement::Add CSV parser and UI path" \
   --goal "verify::Run tests and a sample import"
-python3 plugins/codex-fable5/skills/codex-fable5/scripts/codex_goals.py next
-python3 plugins/codex-fable5/skills/codex-fable5/scripts/codex_goals.py checkpoint --id G001 --status complete --evidence "Read importer.ts and import.test.ts"
-python3 plugins/codex-fable5/skills/codex-fable5/scripts/codex_goals.py next
+codex-fable5 goals next
+codex-fable5 goals checkpoint --id G001 --status complete --evidence "Read importer.ts and import.test.ts"
+codex-fable5 goals next
 ```
 
 Rules:
@@ -35,6 +38,40 @@ Rules:
 - A complete checkpoint requires concrete evidence.
 - The final story requires `--verify-cmd` and `--verify-evidence`.
 - On resume, run `status` first.
+- Store local state under `.codex-fable5/`; do not commit it unless the user asks.
+
+## Findings Ledger
+
+Use `scripts/codex_findings.py` when review or verification produces evidence-backed issues that must not be lost before final completion.
+
+For user-facing terminal use from a checkout, add `plugins/codex-fable5/bin` to `PATH` and use `codex-fable5 findings`.
+
+Example:
+
+```bash
+codex-fable5 findings add \
+  --title "Final checkpoint can pass with unresolved review issues" \
+  --severity high \
+  --source subagent \
+  --evidence "Review found that the final gate only checks tests, not accepted findings."
+codex-fable5 findings next
+codex-fable5 findings resolve \
+  --id F001 \
+  --evidence "Added a findings gate before final checkpoint." \
+  --verify-cmd "python3 -m unittest discover -s tests -v" \
+  --verify-evidence "all tests passed"
+codex-fable5 findings gate
+```
+
+Rules:
+
+- Treat findings as accepted repair work, not brainstorming notes.
+- Add only evidence-backed missing requirements, regressions, factual/source errors, failed checks, or unexplained clues.
+- When a goal is active, new findings attach to that goal automatically unless `--goal` is provided.
+- Resolve findings only after the normal inspect/change/verify loop produces resolution evidence and verification evidence.
+- Run `gate` before completing a final goal checkpoint when accepted findings may remain.
+- Final `codex-fable5 goals checkpoint --status complete` also fails while open or blocked findings remain.
+- By default, `gate` fails on open or blocked findings. Use `--allow-blocked` only when the remaining blocked findings are explicitly accepted as residual risk.
 - Store local state under `.codex-fable5/`; do not commit it unless the user asks.
 
 ## Investigation Protocol

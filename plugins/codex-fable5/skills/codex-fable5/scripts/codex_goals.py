@@ -12,9 +12,11 @@ from typing import Any
 
 STATE_DIR = Path(".codex-fable5")
 GOALS_FILE = STATE_DIR / "goals.json"
+FINDINGS_FILE = STATE_DIR / "findings.json"
 LEDGER_FILE = STATE_DIR / "ledger.jsonl"
 OPEN_STATUSES = {"pending", "in_progress"}
 INCOMPLETE_TERMINAL_STATUSES = {"failed", "blocked"}
+BLOCKING_FINDING_STATUSES = {"open", "blocked"}
 
 
 def now() -> str:
@@ -70,6 +72,17 @@ def terminal_incomplete_goals(goals: list[dict[str, Any]]) -> list[dict[str, Any
     return [goal for goal in goals if goal["status"] in INCOMPLETE_TERMINAL_STATUSES]
 
 
+def blocking_findings() -> list[dict[str, Any]]:
+    if not FINDINGS_FILE.exists():
+        return []
+    data = json.loads(FINDINGS_FILE.read_text(encoding="utf-8"))
+    return [
+        finding
+        for finding in data.get("findings", [])
+        if finding.get("status") in BLOCKING_FINDING_STATUSES
+    ]
+
+
 def cmd_create(args: argparse.Namespace) -> None:
     if GOALS_FILE.exists() and not args.force:
         sys.exit("codex-fable5: plan already exists. Use `status` or replace it with --force.")
@@ -118,7 +131,7 @@ def cmd_next(_: argparse.Namespace) -> None:
     print(f"Objective: {goal['objective']}")
     print("Rule: work this story only and produce concrete evidence.")
     command = (
-        f"codex_goals.py checkpoint --id {goal['id']} --status complete "
+        f"codex-fable5 goals checkpoint --id {goal['id']} --status complete "
         '--evidence "<evidence>"'
     )
     if is_final:
@@ -143,6 +156,14 @@ def cmd_checkpoint(args: argparse.Namespace) -> None:
             sys.exit("codex-fable5: complete checkpoints require non-empty --evidence.")
         if goal["id"] == plan["goals"][-1]["id"] and not (verify_cmd and verify_evidence):
             sys.exit("codex-fable5: final story requires --verify-cmd and --verify-evidence.")
+        if goal["id"] == plan["goals"][-1]["id"]:
+            findings = blocking_findings()
+            if findings:
+                ids = ", ".join(str(finding.get("id", "?")) for finding in findings)
+                sys.exit(
+                    "codex-fable5: final story requires findings gate; "
+                    f"{len(findings)} blocking findings remain ({ids})."
+                )
 
     goal["status"] = args.status
     goal["evidence"] = evidence
@@ -189,7 +210,7 @@ def cmd_status(_: argparse.Namespace) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="codex_goals.py")
+    parser = argparse.ArgumentParser(prog="codex-fable5 goals")
     sub = parser.add_subparsers(dest="command", required=True)
 
     create = sub.add_parser("create")

@@ -53,6 +53,13 @@ Review criteria:
 - Clues the explanation does not cover.
 - Length, scope, or format violations.
 
+When a review finds actionable issues, track them as findings instead of relying on memory. Use the findings ledger for review-sensitive work:
+
+- Add only evidence-backed findings.
+- Resolve accepted findings through the normal inspect, change, verify loop.
+- Re-review only unresolved or materially changed areas.
+- Run the findings gate before final completion when open findings may remain; final goal checkpoints also fail while blocking findings remain.
+
 Keep the review narrow. Do not invent new standards during review, and do not rewrite a passing draft for taste.
 
 ## Writing And Research

@@ -1,0 +1,53 @@
+#!/usr/bin/env sh
+set -eu
+
+SCRIPT_DIR=$(CDPATH= cd "$(dirname "$0")" && pwd)
+GOALS="$SCRIPT_DIR/../skills/codex-fable5/scripts/codex_goals.py"
+FINDINGS="$SCRIPT_DIR/../skills/codex-fable5/scripts/codex_findings.py"
+
+usage() {
+  cat <<'EOF'
+Usage:
+  codex-fable5 status
+  codex-fable5 goals <command> [args...]
+  codex-fable5 findings <command> [args...]
+
+Examples:
+  codex-fable5 status
+  codex-fable5 findings add --title "Missing verification" --evidence "No test evidence"
+  codex-fable5 findings gate
+  codex-fable5 goals next
+EOF
+}
+
+if [ "$#" -eq 0 ]; then
+  usage
+  exit 0
+fi
+
+case "$1" in
+  -h|--help|help)
+    usage
+    ;;
+  status)
+    python3 "$FINDINGS" status
+    if [ -f ".codex-fable5/goals.json" ]; then
+      python3 "$GOALS" status
+    else
+      printf '%s\n' "codex-fable5: no goal plan"
+    fi
+    ;;
+  findings|finding|f)
+    shift
+    exec python3 "$FINDINGS" "$@"
+    ;;
+  goals|goal|g)
+    shift
+    exec python3 "$GOALS" "$@"
+    ;;
+  *)
+    printf '%s\n' "codex-fable5: unknown command '$1'" >&2
+    usage >&2
+    exit 2
+    ;;
+esac

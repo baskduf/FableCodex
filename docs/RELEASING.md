@@ -13,10 +13,14 @@ This project uses a lightweight release process because it is a small Codex plug
 ```bash
 python3 -m unittest discover -s tests -v
 python3 -m py_compile \
+  plugins/codex-fable5/skills/codex-fable5/scripts/codex_findings.py \
   plugins/codex-fable5/skills/codex-fable5/scripts/codex_goals.py \
   plugins/codex-fable5/skills/codex-fable5/scripts/fable_coverage.py \
   plugins/codex-fable5/skills/codex-fable5/scripts/make_litellm_config.py \
   tests/test_scripts.py
+sh -n plugins/codex-fable5/bin/codex-fable5
+sh -n plugins/codex-fable5/bin/codex-findings
+sh -n plugins/codex-fable5/bin/codex-goals
 python3 plugins/codex-fable5/skills/codex-fable5/scripts/fable_coverage.py
 ```
 
