@@ -47,7 +47,7 @@ Choose one marketplace source.
 Stable release:
 
 ```bash
-codex plugin marketplace add baskduf/FableCodex --ref v0.3.1
+codex plugin marketplace add baskduf/FableCodex --ref v0.4.0
 codex plugin add codex-fable5@fablecodex
 ```
 

@@ -11,6 +11,8 @@ This project uses a lightweight changelog format:
 
 ## Unreleased
 
+## 0.4.0 - 2026-06-15
+
 ### Added
 
 - Added `codex_findings.py` to track evidence-backed review findings and gate final completion.
