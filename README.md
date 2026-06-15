@@ -120,7 +120,7 @@ Use $codex-fable5 to convert this Claude/Fable prompt into Codex AGENTS.md guida
 Create a simple multi-goal ledger:
 
 ```bash
-python plugins/codex-fable5/skills/codex-fable5/scripts/codex_goals.py create --brief "Migration" \
+python3 plugins/codex-fable5/skills/codex-fable5/scripts/codex_goals.py create --brief "Migration" \
   --goal "inspect::Find current behavior and tests" \
   --goal "change::Implement the migration" \
   --goal "verify::Run tests and inspect output"
@@ -133,7 +133,7 @@ python plugins/codex-fable5/skills/codex-fable5/scripts/codex_goals.py create --
 If you have a local copy of `CLAUDE-FABLE-5.md`, run:
 
 ```bash
-python plugins/codex-fable5/skills/codex-fable5/scripts/fable_coverage.py \
+python3 plugins/codex-fable5/skills/codex-fable5/scripts/fable_coverage.py \
   --source /path/to/CLAUDE-FABLE-5.md
 ```
 
@@ -146,7 +146,7 @@ The target is 100% source-heading accounting. That means every named source sect
 Run the stdlib-only test suite:
 
 ```bash
-python -m unittest discover -s tests -v
+python3 -m unittest discover -s tests -v
 ```
 
 ---

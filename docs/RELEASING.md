@@ -11,13 +11,13 @@ This project uses a lightweight release process because it is a small Codex plug
 5. Run local verification:
 
 ```bash
-python -m unittest discover -s tests -v
-python -m py_compile \
+python3 -m unittest discover -s tests -v
+python3 -m py_compile \
   plugins/codex-fable5/skills/codex-fable5/scripts/codex_goals.py \
   plugins/codex-fable5/skills/codex-fable5/scripts/fable_coverage.py \
   plugins/codex-fable5/skills/codex-fable5/scripts/make_litellm_config.py \
   tests/test_scripts.py
-python plugins/codex-fable5/skills/codex-fable5/scripts/fable_coverage.py
+python3 plugins/codex-fable5/skills/codex-fable5/scripts/fable_coverage.py
 ```
 
 6. Verify no secrets, `.codex-fable5/` ledgers, or local cache files are staged.
@@ -42,4 +42,3 @@ Use semantic versioning for the plugin package:
 ## Release Boundaries
 
 Do not release changes that claim unavailable model access, include credentials, or copy protected prompt text into the repository.
-

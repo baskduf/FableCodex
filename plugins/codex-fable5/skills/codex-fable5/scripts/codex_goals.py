@@ -13,6 +13,8 @@ from typing import Any
 STATE_DIR = Path(".codex-fable5")
 GOALS_FILE = STATE_DIR / "goals.json"
 LEDGER_FILE = STATE_DIR / "ledger.jsonl"
+OPEN_STATUSES = {"pending", "in_progress"}
+INCOMPLETE_TERMINAL_STATUSES = {"failed", "blocked"}
 
 
 def now() -> str:
@@ -56,6 +58,18 @@ def parse_goal(raw: str, index: int) -> dict[str, Any]:
     }
 
 
+def incomplete_terminal_summary(goals: list[dict[str, Any]]) -> str:
+    counts = {
+        status: sum(1 for goal in goals if goal["status"] == status)
+        for status in sorted(INCOMPLETE_TERMINAL_STATUSES)
+    }
+    return ", ".join(f"{count} {status}" for status, count in counts.items() if count)
+
+
+def terminal_incomplete_goals(goals: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [goal for goal in goals if goal["status"] in INCOMPLETE_TERMINAL_STATUSES]
+
+
 def cmd_create(args: argparse.Namespace) -> None:
     if GOALS_FILE.exists() and not args.force:
         sys.exit("codex-fable5: plan already exists. Use `status` or replace it with --force.")
@@ -76,14 +90,28 @@ def cmd_next(_: argparse.Namespace) -> None:
     if active:
         goal = active[0]
     else:
-        pending = [goal for goal in plan["goals"] if goal["status"] == "pending"]
-        if not pending:
-            print("codex-fable5: all stories complete")
-            return
-        goal = pending[0]
-        goal["status"] = "in_progress"
-        write_json(GOALS_FILE, plan)
-        append_event("story_started", id=goal["id"], title=goal["title"])
+        incomplete = terminal_incomplete_goals(plan["goals"])
+        if incomplete:
+            goal = incomplete[0]
+            previous_status = goal["status"]
+            goal["status"] = "in_progress"
+            write_json(GOALS_FILE, plan)
+            append_event(
+                "story_reopened",
+                id=goal["id"],
+                title=goal["title"],
+                previous_status=previous_status,
+            )
+            print(f"Reopened {goal['id']} from {previous_status}.")
+        else:
+            pending = [goal for goal in plan["goals"] if goal["status"] == "pending"]
+            if not pending:
+                print("codex-fable5: all stories complete")
+                return
+            goal = pending[0]
+            goal["status"] = "in_progress"
+            write_json(GOALS_FILE, plan)
+            append_event("story_started", id=goal["id"], title=goal["title"])
 
     is_final = goal["id"] == plan["goals"][-1]["id"]
     print(f"=== codex-fable5 handoff: {goal['id']} {goal['title']}")
@@ -129,9 +157,17 @@ def cmd_checkpoint(args: argparse.Namespace) -> None:
         verify_cmd=verify_cmd,
         verify_evidence=verify_evidence,
     )
-    remaining = [item for item in plan["goals"] if item["status"] in {"pending", "in_progress"}]
+    remaining = [item for item in plan["goals"] if item["status"] in OPEN_STATUSES]
     print(f"codex-fable5: {goal['id']} -> {args.status}")
-    print("codex-fable5: all stories complete" if not remaining else f"codex-fable5: {len(remaining)} stories left")
+    if terminal_incomplete_goals(plan["goals"]):
+        summary = incomplete_terminal_summary(plan["goals"])
+        print(f"codex-fable5: plan is not complete; {summary}.")
+        if remaining:
+            print(f"codex-fable5: {len(remaining)} open stories remain blocked.")
+    elif remaining:
+        print(f"codex-fable5: {len(remaining)} stories left")
+    else:
+        print("codex-fable5: all stories complete")
 
 
 def cmd_status(_: argparse.Namespace) -> None:
