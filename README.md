@@ -76,13 +76,23 @@ In Codex:
 ```text
 Use $codex-fable5 to analyze this project.
 
+Use $codex-fable5 to do this with findings tracking.
+
 $codex-fable5로 이 프로젝트를 분석해줘.
+
+$codex-fable5로 이 작업 진행하고, 리뷰 findings도 추적해줘.
 
 $codex-fable5 を使って、このプロジェクトを分析してください。
 
+$codex-fable5 を使ってこの作業を進め、レビュー findings も追跡してください。
+
 请使用 $codex-fable5 分析这个项目。
 
+请使用 $codex-fable5 完成这项工作，并跟踪审查 findings。
+
 請使用 $codex-fable5 分析這個專案。
+
+請使用 $codex-fable5 完成這項工作，並追蹤審查 findings。
 ```
 
 Use the local helper from a checkout:
@@ -119,6 +129,42 @@ codex-fable5 findings gate
 ```
 
 Final goal completion also fails while open or blocked findings remain. `codex-goals` and `codex-findings` are still available as advanced aliases.
+
+---
+
+## Findings Gate
+
+The findings gate is an optional review closeout flow for work where missed issues are costly.
+
+Use it when:
+
+- A review or sub-agent finds actionable issues.
+- Verification is uncertain or failed once.
+- The task touches several files, migrations, security-sensitive code, or release behavior.
+
+Do not use it for simple edits or routine answers.
+
+In normal Codex use, ask for it in the prompt:
+
+```text
+Use $codex-fable5 to implement this and track findings before final completion.
+```
+
+For terminal use, add findings as accepted repair work:
+
+```bash
+codex-fable5 findings add \
+  --title "Missing final verification" \
+  --evidence "Review found no command output proving the final state."
+codex-fable5 findings next
+codex-fable5 findings resolve \
+  --id F001 \
+  --evidence "Added final verification." \
+  --verify-evidence "Tests passed and final status was checked."
+codex-fable5 findings gate
+```
+
+`codex-fable5 goals checkpoint --status complete` will fail while open or blocked findings remain.
 
 ---
 
