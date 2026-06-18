@@ -9,7 +9,7 @@ This project uses a lightweight changelog format:
 - `Fixed` for bug fixes.
 - `Security` for vulnerability-related changes.
 
-## Unreleased
+## 0.4.3 - 2026-06-18
 
 ### Changed
 

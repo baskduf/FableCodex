@@ -40,7 +40,7 @@ It is useful when the cost of a missed step is higher than the cost of a little 
 Install the stable release:
 
 ```bash
-codex plugin marketplace add baskduf/FableCodex --ref v0.4.2
+codex plugin marketplace add baskduf/FableCodex --ref v0.4.3
 codex plugin add codex-fable5@fablecodex
 ```
 
@@ -215,7 +215,7 @@ plugins/codex-fable5/bin/codex-fable5 status
 Stable release:
 
 ```bash
-codex plugin marketplace add baskduf/FableCodex --ref v0.4.2
+codex plugin marketplace add baskduf/FableCodex --ref v0.4.3
 codex plugin add codex-fable5@fablecodex
 ```
 
