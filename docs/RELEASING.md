@@ -17,7 +17,7 @@ python3 -m py_compile \
   plugins/codex-fable5/skills/codex-fable5/scripts/codex_goals.py \
   plugins/codex-fable5/skills/codex-fable5/scripts/fable_coverage.py \
   plugins/codex-fable5/skills/codex-fable5/scripts/make_litellm_config.py \
-  tests/test_scripts.py
+  tests/*.py
 sh -n plugins/codex-fable5/bin/codex-fable5
 sh -n plugins/codex-fable5/bin/codex-findings
 sh -n plugins/codex-fable5/bin/codex-goals
