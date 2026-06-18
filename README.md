@@ -288,6 +288,15 @@ It paraphrases and adapts workflow ideas instead of reproducing source prompts o
 
 - FableCodex was listed in [sickn33/antigravity-awesome-skills#686](https://github.com/sickn33/antigravity-awesome-skills/pull/686).
 
+## Contributors
+
+Thanks to everyone who has helped shape this kit through code, docs, reviews,
+examples, translations, and dogfooding.
+
+<a href="https://github.com/baskduf/FableCodex/graphs/contributors">
+  <img src="https://readme-contribs.as93.net/contributors/baskduf/FableCodex?v=20260618-fablecodex" alt="Contributors" />
+</a>
+
 ## License
 
 AGPL-3.0-or-later. See `LICENSE`, `NOTICE`, and `plugins/codex-fable5/skills/codex-fable5/references/provenance.md`.
