@@ -9,6 +9,18 @@ This project uses a lightweight changelog format:
 - `Fixed` for bug fixes.
 - `Security` for vulnerability-related changes.
 
+## 0.5.0 - 2026-06-18
+
+### Added
+
+- Added `codex-fable5 version` to report the installed plugin version, paths, and git checkout state.
+- Added `codex-fable5 update` to update a clean FableCodex checkout to the latest stable tag or an explicit ref.
+
+### Changed
+
+- Documented the new version and update commands across all localized READMEs.
+- Strengthened wrapper tests for dirty-checkout protection and prerelease tag filtering.
+
 ## 0.4.4 - 2026-06-18
 
 ### Changed

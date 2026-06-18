@@ -1,6 +1,6 @@
 {
   "name": "codex-fable5",
-  "version": "0.4.4",
+  "version": "0.5.0",
   "description": "Fable-style Codex workflow with source-section coverage, goal and findings gates, verification grounding, VFF routing, and optional provider bridge guidance.",
   "author": {
     "name": "Codex Fable5 Maintainers"
