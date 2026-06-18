@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import shutil
+
 try:
     from tests.support import (
         BIN,
@@ -228,3 +230,164 @@ class CiReleaseTests(ScriptTestBase):
             self.assertEqual(status_with_plan.returncode, 0, status_with_plan.stderr)
             self.assertIn("1 open", status_with_plan.stdout)
             self.assertIn("0/1 complete", status_with_plan.stdout)
+
+    def test_version_command_reports_manifest_and_paths(self) -> None:
+        env = {**os.environ, "PATH": f"{BIN}{os.pathsep}{os.environ['PATH']}"}
+        plugin = json.loads((ROOT / "plugins" / "codex-fable5" / ".codex-plugin" / "plugin.json").read_text())
+
+        result = subprocess.run(
+            ["codex-fable5", "version"],
+            cwd=ROOT,
+            env=env,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn(f"codex-fable5 {plugin['version']}", result.stdout)
+        self.assertIn("plugin:", result.stdout)
+        self.assertIn("skill:", result.stdout)
+        self.assertIn("wrapper:", result.stdout)
+        self.assertIn("git:", result.stdout)
+
+    def test_update_command_updates_clean_checkout_to_requested_ref(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            clone = Path(tmp) / "FableCodex"
+            shutil.copytree(ROOT / "plugins", clone / "plugins")
+            for command in [
+                ["git", "init"],
+                ["git", "config", "user.email", "test@example.invalid"],
+                ["git", "config", "user.name", "Test User"],
+                ["git", "add", "plugins"],
+                ["git", "commit", "-m", "release"],
+                ["git", "tag", "v0.4.4"],
+            ]:
+                result = subprocess.run(command, cwd=clone, text=True, capture_output=True, check=False)
+                self.assertEqual(result.returncode, 0, result.stderr)
+            (clone / "NEXT.txt").write_text("next\n", encoding="utf-8")
+            for command in [["git", "add", "NEXT.txt"], ["git", "commit", "-m", "next"]]:
+                result = subprocess.run(command, cwd=clone, text=True, capture_output=True, check=False)
+                self.assertEqual(result.returncode, 0, result.stderr)
+
+            update = subprocess.run(
+                [
+                    str(clone / "plugins" / "codex-fable5" / "bin" / "codex-fable5"),
+                    "update",
+                    "--ref",
+                    "v0.4.4",
+                    "--no-fetch",
+                ],
+                cwd=clone,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(update.returncode, 0, update.stderr)
+            self.assertIn("updates the FableCodex checkout/plugin package only", update.stdout)
+            self.assertIn("restart Codex", update.stdout)
+
+            head = subprocess.run(
+                ["git", "rev-parse", "HEAD"],
+                cwd=clone,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            tag = subprocess.run(
+                ["git", "rev-parse", "v0.4.4^{commit}"],
+                cwd=clone,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(head.returncode, 0, head.stderr)
+            self.assertEqual(tag.returncode, 0, tag.stderr)
+            self.assertEqual(head.stdout.strip(), tag.stdout.strip())
+
+    def test_update_command_refuses_dirty_checkout(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            clone = Path(tmp) / "FableCodex"
+            shutil.copytree(ROOT / "plugins", clone / "plugins")
+            for command in [
+                ["git", "init"],
+                ["git", "config", "user.email", "test@example.invalid"],
+                ["git", "config", "user.name", "Test User"],
+                ["git", "add", "plugins"],
+                ["git", "commit", "-m", "release"],
+                ["git", "tag", "v0.4.4"],
+            ]:
+                result = subprocess.run(command, cwd=clone, text=True, capture_output=True, check=False)
+                self.assertEqual(result.returncode, 0, result.stderr)
+            (clone / "DIRTY.txt").write_text("dirty\n", encoding="utf-8")
+
+            update = subprocess.run(
+                [
+                    str(clone / "plugins" / "codex-fable5" / "bin" / "codex-fable5"),
+                    "update",
+                    "--ref",
+                    "v0.4.4",
+                    "--no-fetch",
+                ],
+                cwd=clone,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertNotEqual(update.returncode, 0)
+            self.assertIn("refusing to update a dirty checkout", update.stderr)
+
+    def test_update_default_ignores_prerelease_tags(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            clone = Path(tmp) / "FableCodex"
+            shutil.copytree(ROOT / "plugins", clone / "plugins")
+            for command in [
+                ["git", "init"],
+                ["git", "config", "user.email", "test@example.invalid"],
+                ["git", "config", "user.name", "Test User"],
+                ["git", "add", "plugins"],
+                ["git", "commit", "-m", "stable release"],
+                ["git", "tag", "v1.0.0"],
+            ]:
+                result = subprocess.run(command, cwd=clone, text=True, capture_output=True, check=False)
+                self.assertEqual(result.returncode, 0, result.stderr)
+            (clone / "RC.txt").write_text("rc\n", encoding="utf-8")
+            for command in [
+                ["git", "add", "RC.txt"],
+                ["git", "commit", "-m", "release candidate"],
+                ["git", "tag", "v1.1.0-rc1"],
+                ["git", "checkout", "-b", "work"],
+            ]:
+                result = subprocess.run(command, cwd=clone, text=True, capture_output=True, check=False)
+                self.assertEqual(result.returncode, 0, result.stderr)
+
+            update = subprocess.run(
+                [
+                    str(clone / "plugins" / "codex-fable5" / "bin" / "codex-fable5"),
+                    "update",
+                    "--no-fetch",
+                ],
+                cwd=clone,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(update.returncode, 0, update.stderr)
+            self.assertIn("updated to v1.0.0", update.stdout)
+
+            head = subprocess.run(
+                ["git", "rev-parse", "HEAD"],
+                cwd=clone,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            stable = subprocess.run(
+                ["git", "rev-parse", "v1.0.0^{commit}"],
+                cwd=clone,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(head.stdout.strip(), stable.stdout.strip())

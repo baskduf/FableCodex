@@ -106,6 +106,8 @@ class ManifestDocsTests(ScriptTestBase):
         ]
         required_snippets = [
             "codex-fable5 goals create",
+            "codex-fable5 version",
+            "codex-fable5 update",
             "codex-fable5 findings gate",
             ".codex-fable5/",
             "AGPL-3.0-or-later",
