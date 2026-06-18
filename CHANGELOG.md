@@ -9,6 +9,15 @@ This project uses a lightweight changelog format:
 - `Fixed` for bug fixes.
 - `Security` for vulnerability-related changes.
 
+## 0.4.4 - 2026-06-18
+
+### Changed
+
+- Split the monolithic script test suite into focused modules while keeping `tests/test_scripts.py` as a compatibility placeholder.
+- Extracted shared state, locking, JSON, and event helpers for the goal and findings ledgers into `codex_fable_state.py`.
+- Strengthened CI workflow validation so the pinned FABLE-5 source fetch and coverage `--source` validation stay semantically linked.
+- Updated contributor, release, and CI verification commands to compile the new shared helper module.
+
 ## 0.4.3 - 2026-06-18
 
 ### Changed

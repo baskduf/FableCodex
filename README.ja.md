@@ -40,7 +40,7 @@ FableCodex は、Codex の作業に Fable 風の運用習慣を追加する Code
 安定版をインストールします。
 
 ```bash
-codex plugin marketplace add baskduf/FableCodex --ref v0.4.3
+codex plugin marketplace add baskduf/FableCodex --ref v0.4.4
 codex plugin add codex-fable5@fablecodex
 ```
 
@@ -215,7 +215,7 @@ plugins/codex-fable5/bin/codex-fable5 status
 安定版:
 
 ```bash
-codex plugin marketplace add baskduf/FableCodex --ref v0.4.3
+codex plugin marketplace add baskduf/FableCodex --ref v0.4.4
 codex plugin add codex-fable5@fablecodex
 ```
 
