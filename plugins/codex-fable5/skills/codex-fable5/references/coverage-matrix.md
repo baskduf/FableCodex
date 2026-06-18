@@ -16,7 +16,6 @@ Status definitions:
 | `claude_behavior` | adapted | `SKILL.md`, `operating-structure.md` | Preserve portable assistant behavior while obeying active Codex instructions. |
 | `claude_behavior > product_information` | adapted | `currentness-safety.md`, `fable-to-codex-map.md` | Verify current OpenAI/Codex facts from official sources; avoid stale provider claims. |
 | `claude_behavior > refusal_handling` | adapted | `currentness-safety.md`, `SKILL.md` | Use active Codex safety policy with brief boundaries and safe alternatives. |
-| `claude_behavior > critical_child_safety_instructions` | adapted | `currentness-safety.md`, active safety policy | Treat child-safety material as high-risk source content; preserve protective boundaries without exposing detection mechanics or reusable harmful scripts. |
 | `claude_behavior > legal_and_financial_advice` | adapted | `currentness-safety.md` | Provide factual context and uncertainty; do not act as a licensed professional. |
 | `claude_behavior > tone_and_formatting` | adapted | `operating-structure.md`, `SKILL.md` | Use direct Codex engineering prose and structure only when useful. |
 | `claude_behavior > tone_and_formatting > lists_and_bullets` | adapted | `operating-structure.md` | Prefer readable prose; use bullets/tables for scanability, not filler. |

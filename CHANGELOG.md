@@ -15,7 +15,6 @@ This project uses a lightweight changelog format:
 
 - Reworked the README around quick start, user control, goal ledgers, findings gates, command reference, local state, and explicit limitations.
 - Added localized README files for Korean, Japanese, Simplified Chinese, and Traditional Chinese (Taiwan).
-- Accounted for the `critical_child_safety_instructions` source heading in the Fable coverage matrix and mapped it to Codex-native safety guidance.
 - Added explicit conversion priorities and "do not convert" boundaries for turning Claude/Fable prompt sections into Codex-native behavior.
 - Added currentness notes for Fable/Mythos provider availability so routing examples are treated as templates unless official docs and account access prove availability.
 
@@ -24,6 +23,9 @@ This project uses a lightweight changelog format:
 - Hardened goal and findings ledgers against malformed state, concurrent findings writes, and failed forced plan replacement.
 - Made coverage checking tolerate source markdown that starts below an H1 heading.
 - Aligned release, contributor, README, and provider-bridge examples with the current package layout and verification commands.
+- Removed the fabricated `claude_behavior > critical_child_safety_instructions` row from the coverage matrix. The heading does not exist in the pinned upstream `CLAUDE-FABLE-5.md` (commit `dc626fed`); it was added under a stale assumption. Coverage is now an honest 71/71.
+- The CI workflow now fetches the pinned upstream FABLE-5 source and passes it to `fable_coverage.py --source`. Previously the validator ran with no `--source`, which made the matrix self-consistent and could not detect fabricated rows.
+- Added `test_coverage_matrix_validates_against_pinned_source` and `test_ci_workflow_validates_against_pinned_source` so this regression cannot recur.
 
 ## 0.4.1 - 2026-06-15
 

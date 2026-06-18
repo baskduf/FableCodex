@@ -41,5 +41,24 @@ jobs:
           sh -n plugins/codex-fable5/bin/codex-findings
           sh -n plugins/codex-fable5/bin/codex-goals
 
+      - name: Fetch pinned FABLE-5 source
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p build/fable5
+          # The pin lives in the coverage matrix's preamble. Hardcode the
+          # commit SHA from the matrix's source note for explicit traceability.
+          PIN="dc626fed52b06d687cdc812d51090c95ed03d575"
+          curl -fsSL \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github.raw" \
+            "https://api.github.com/repos/elder-plinius/CL4R1T4S/contents/ANTHROPIC/CLAUDE-FABLE-5.md?ref=${PIN}" \
+            -o build/fable5/CLAUDE-FABLE-5.md
+          # Sanity check: file must contain a Fable 5 marker.
+          grep -q "Fable 5" build/fable5/CLAUDE-FABLE-5.md \
+            || { echo "::error::Pinned FABLE-5 source did not contain 'Fable 5' marker"; exit 1; }
+          echo "Fetched pinned FABLE-5 source at ${PIN}: $(wc -l < build/fable5/CLAUDE-FABLE-5.md) lines"
+
       - name: Validate coverage matrix
-        run: python3 plugins/codex-fable5/skills/codex-fable5/scripts/fable_coverage.py
+        run: python3 plugins/codex-fable5/skills/codex-fable5/scripts/fable_coverage.py --source build/fable5/CLAUDE-FABLE-5.md

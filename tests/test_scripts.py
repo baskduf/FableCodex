@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -184,6 +185,69 @@ class ScriptTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("coverage matrix valid", result.stdout)
         self.assertIn("implemented=", result.stdout)
+
+    def test_coverage_matrix_validates_against_pinned_source(self) -> None:
+        """When --source points at the pinned upstream FABLE-5, headings
+        must match the matrix exactly. The README pins the upstream commit
+        SHA; this test fetches the same bytes the CI workflow fetches and
+        runs the validator against the local matrix."""
+        script = SCRIPTS / "fable_coverage.py"
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        match = re.search(
+            r"`elder-plinius/CL4R1T4S`\s+`ANTHROPIC/CLAUDE-FABLE-5\.md`\s+"
+            r"at commit\s+`([0-9a-f]{40})`",
+            readme,
+        )
+        self.assertIsNotNone(match, "pinned SHA not found in README")
+        assert match is not None  # for type checkers
+        pin = match.group(1)
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "CLAUDE-FABLE-5.md"
+            url = (
+                f"https://raw.githubusercontent.com/elder-plinius/CL4R1T4S/"
+                f"{pin}/ANTHROPIC/CLAUDE-FABLE-5.md"
+            )
+            download = subprocess.run(
+                ["curl", "-fsSL", url, "-o", str(source)],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            if download.returncode != 0:
+                self.skipTest(f"could not fetch pinned source (network?): {download.stderr[:200]}")
+            result = subprocess.run(
+                [sys.executable, str(script), "--source", str(source)],
+                cwd=ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(
+                result.returncode, 0,
+                f"matrix/source mismatch:\nstdout={result.stdout}\nstderr={result.stderr}",
+            )
+            self.assertIn("source headings", result.stdout)
+            self.assertIn("matrix rows", result.stdout)
+
+    def test_ci_workflow_validates_against_pinned_source(self) -> None:
+        """The CI workflow must fetch the pinned upstream source and pass
+        it to the validator. Without this, the default `--matrix`-only run
+        is self-consistent and can hide a fabricated row."""
+        workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+        self.assertIn("CLAUDE-FABLE-5.md", workflow)
+        self.assertIn("elder-plinius/CL4R1T4S", workflow)
+        # The validator invocation must include --source.
+        # Look for lines that invoke fable_coverage.py and contain --source.
+        has_source_arg = False
+        for line in workflow.splitlines():
+            if "fable_coverage.py" in line and "--source" in line:
+                has_source_arg = True
+                break
+        self.assertTrue(
+            has_source_arg,
+            "CI workflow must pass --source to fable_coverage.py "
+            "so the matrix is validated against the upstream FABLE-5 source",
+        )
 
     def test_user_facing_wrappers_run_from_path(self) -> None:
         env = {**os.environ, "PATH": f"{BIN}{os.pathsep}{os.environ['PATH']}"}
