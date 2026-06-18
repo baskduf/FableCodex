@@ -43,6 +43,18 @@ except ModuleNotFoundError:  # unittest discovery with tests/ as top-level.
 
 
 class GoalLedgerTests(ScriptTestBase):
+    def test_goal_and_findings_scripts_share_state_helpers(self) -> None:
+        state = self.codex_fable_state
+        for helper in ["locked_state", "read_json", "write_json", "append_event", "require_object", "now"]:
+            with self.subTest(helper=helper):
+                self.assertIs(getattr(self.codex_goals, helper), getattr(state, helper))
+                self.assertIs(getattr(self.codex_findings, helper), getattr(state, helper))
+
+        for constant in ["STATE_DIR", "GOALS_FILE", "FINDINGS_FILE", "LEDGER_FILE", "LOCK_FILE"]:
+            with self.subTest(constant=constant):
+                self.assertEqual(getattr(self.codex_goals, constant), getattr(state, constant))
+                self.assertEqual(getattr(self.codex_findings, constant), getattr(state, constant))
+
     def test_goal_ledger_flow_and_final_verification_gate(self) -> None:
         script = SCRIPTS / "codex_goals.py"
         with tempfile.TemporaryDirectory() as tmp:
@@ -242,7 +254,7 @@ class GoalLedgerTests(ScriptTestBase):
             self.assertIn("Reopened G001 from blocked", reopened.stdout)
 
     def test_lock_fallback_times_out_on_stale_lockdir(self) -> None:
-        for module in [self.codex_findings, self.codex_goals]:
+        for module in [self.codex_fable_state]:
             with self.subTest(module=module.__name__):
                 with tempfile.TemporaryDirectory() as tmp:
                     cwd = Path(tmp)

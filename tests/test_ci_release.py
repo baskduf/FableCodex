@@ -10,7 +10,11 @@ try:
         ScriptTestBase,
         SimpleNamespace,
         json,
+        extract_ci_output_path,
+        extract_ci_pin,
+        extract_fable_coverage_source_arg,
         os,
+        parse_ci_workflow_steps,
         parse_routing_map,
         read_readme_fable_pin,
         read_skill_body,
@@ -30,7 +34,11 @@ except ModuleNotFoundError:  # unittest discovery with tests/ as top-level.
         ScriptTestBase,
         SimpleNamespace,
         json,
+        extract_ci_output_path,
+        extract_ci_pin,
+        extract_fable_coverage_source_arg,
         os,
+        parse_ci_workflow_steps,
         parse_routing_map,
         read_readme_fable_pin,
         read_skill_body,
@@ -50,6 +58,7 @@ class CiReleaseTests(ScriptTestBase):
         self.assertIn("actions/setup-python@v6", workflow)
         self.assertIn("python3 -m unittest discover -s tests -v", workflow)
         self.assertIn("python3 -m py_compile", workflow)
+        self.assertIn("codex_fable_state.py", workflow)
         self.assertIn("codex_findings.py", workflow)
         self.assertIn("sh -n plugins/codex-fable5/bin/codex-fable5", workflow)
         self.assertIn("sh -n plugins/codex-fable5/bin/codex-findings", workflow)
@@ -102,6 +111,24 @@ class CiReleaseTests(ScriptTestBase):
             "CI workflow must pass --source to fable_coverage.py "
             "so the matrix is validated against the upstream FABLE-5 source",
         )
+
+    def test_ci_workflow_fetch_and_validate_steps_are_semantically_linked(self) -> None:
+        workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+        steps = parse_ci_workflow_steps(workflow)
+
+        fetch = steps["Fetch pinned FABLE-5 source"]
+        validate = steps["Validate coverage matrix"]
+        fetched_path = extract_ci_output_path(fetch)
+
+        self.assertEqual("build/fable5/CLAUDE-FABLE-5.md", fetched_path)
+        self.assertEqual(read_readme_fable_pin(), extract_ci_pin(fetch))
+        self.assertEqual(
+            fetched_path,
+            extract_fable_coverage_source_arg(validate),
+            "CI must validate the exact pinned source file it fetched, not a different path or matrix-only run",
+        )
+        self.assertIn("grep -q \"Fable 5\"", fetch)
+        self.assertNotIn("Authorization:", fetch)
 
     def test_release_checklist_validates_against_pinned_source(self) -> None:
         releasing = (ROOT / "docs" / "RELEASING.md").read_text(encoding="utf-8")

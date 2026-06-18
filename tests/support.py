@@ -17,14 +17,19 @@ ROOT = Path(__file__).resolve().parents[1]
 SKILL_ROOT = ROOT / "plugins" / "codex-fable5" / "skills" / "codex-fable5"
 SCRIPTS = SKILL_ROOT / "scripts"
 BIN = ROOT / "plugins" / "codex-fable5" / "bin"
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
 
 
 def load_script(name: str):
+    if name in sys.modules:
+        return sys.modules[name]
     path = SCRIPTS / f"{name}.py"
     spec = importlib.util.spec_from_file_location(name, path)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"could not load {path}")
     module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
     spec.loader.exec_module(module)
     return module
 
@@ -64,9 +69,45 @@ def read_readme_fable_pin() -> str:
     return match.group(1)
 
 
+def parse_ci_workflow_steps(workflow: str) -> dict[str, str]:
+    steps: dict[str, str] = {}
+    matches = list(
+        re.finditer(
+            r"^      - name: (?P<name>.+?)\r?\n(?P<body>.*?)(?=^      - name: |\Z)",
+            workflow,
+            re.DOTALL | re.MULTILINE,
+        )
+    )
+    for match in matches:
+        steps[match.group("name")] = match.group("body")
+    return steps
+
+
+def extract_ci_pin(step_body: str) -> str:
+    match = re.search(r'PIN="([0-9a-f]{40})"', step_body)
+    if match is None:
+        raise AssertionError("workflow step does not define a 40-character PIN")
+    return match.group(1)
+
+
+def extract_ci_output_path(step_body: str) -> str:
+    match = re.search(r"\s-o\s+([^\s]+)", step_body)
+    if match is None:
+        raise AssertionError("workflow fetch step does not write to a concrete -o path")
+    return match.group(1).strip('"')
+
+
+def extract_fable_coverage_source_arg(step_body: str) -> str:
+    match = re.search(r"fable_coverage\.py\s+--source\s+([^\s]+)", step_body)
+    if match is None:
+        raise AssertionError("workflow validate step does not pass --source to fable_coverage.py")
+    return match.group(1).strip('"')
+
+
 class ScriptTestBase(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
+        cls.codex_fable_state = load_script("codex_fable_state")
         cls.fable_coverage = load_script("fable_coverage")
         cls.codex_goals = load_script("codex_goals")
         cls.codex_findings = load_script("codex_findings")
