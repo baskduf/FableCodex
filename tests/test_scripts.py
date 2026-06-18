@@ -293,6 +293,24 @@ class ScriptTests(unittest.TestCase):
         workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
         self.assertIn("CLAUDE-FABLE-5.md", workflow)
         self.assertIn("elder-plinius/CL4R1T4S", workflow)
+        fetch_step = re.search(
+            r"      - name: Fetch pinned FABLE-5 source\n(?P<body>.*?)(?:\n      - name: |\Z)",
+            workflow,
+            re.DOTALL,
+        )
+        self.assertIsNotNone(fetch_step, "CI workflow must define the pinned source fetch step")
+        assert fetch_step is not None  # for type checkers
+        fetch_step_body = fetch_step.group("body")
+        self.assertIn(
+            "raw.githubusercontent.com/elder-plinius/CL4R1T4S/${PIN}/ANTHROPIC/CLAUDE-FABLE-5.md",
+            fetch_step_body,
+            "CI should fetch the public pinned source directly, matching the release checklist",
+        )
+        self.assertNotIn(
+            "Authorization: Bearer",
+            fetch_step_body,
+            "CI source fetch should not rely on a hand-built Authorization header; malformed quoting can hide curl failures",
+        )
         pin_match = re.search(r'PIN="([0-9a-f]{40})"', workflow)
         self.assertIsNotNone(pin_match, "CI workflow must define the pinned upstream SHA")
         assert pin_match is not None  # for type checkers

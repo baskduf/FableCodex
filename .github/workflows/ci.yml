@@ -42,8 +42,6 @@ jobs:
           sh -n plugins/codex-fable5/bin/codex-goals
 
       - name: Fetch pinned FABLE-5 source
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           mkdir -p build/fable5
@@ -51,9 +49,7 @@ jobs:
           # commit SHA from the matrix's source note for explicit traceability.
           PIN="dc626fed52b06d687cdc812d51090c95ed03d575"
           curl -fsSL \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
-            -H "Accept: application/vnd.github.raw" \
-            "https://api.github.com/repos/elder-plinius/CL4R1T4S/contents/ANTHROPIC/CLAUDE-FABLE-5.md?ref=${PIN}" \
+            "https://raw.githubusercontent.com/elder-plinius/CL4R1T4S/${PIN}/ANTHROPIC/CLAUDE-FABLE-5.md" \
             -o build/fable5/CLAUDE-FABLE-5.md
           # Sanity check: file must contain a Fable 5 marker.
           grep -q "Fable 5" build/fable5/CLAUDE-FABLE-5.md \
