@@ -40,7 +40,7 @@ FableCodex 是一个 Codex 插件，用来把 Fable 风格的工作习惯加入 
 安装稳定版：
 
 ```bash
-codex plugin marketplace add baskduf/FableCodex --ref v0.4.3
+codex plugin marketplace add baskduf/FableCodex --ref v0.4.4
 codex plugin add codex-fable5@fablecodex
 ```
 
@@ -215,7 +215,7 @@ plugins/codex-fable5/bin/codex-fable5 status
 稳定版：
 
 ```bash
-codex plugin marketplace add baskduf/FableCodex --ref v0.4.3
+codex plugin marketplace add baskduf/FableCodex --ref v0.4.4
 codex plugin add codex-fable5@fablecodex
 ```
 
