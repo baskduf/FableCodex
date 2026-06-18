@@ -2,22 +2,154 @@
 set -eu
 
 SCRIPT_DIR=$(CDPATH= cd "$(dirname "$0")" && pwd)
+PLUGIN_ROOT=$(CDPATH= cd "$SCRIPT_DIR/.." && pwd)
+REPO_ROOT=$(CDPATH= cd "$PLUGIN_ROOT/../.." && pwd)
+MANIFEST="$PLUGIN_ROOT/.codex-plugin/plugin.json"
 GOALS="$SCRIPT_DIR/../skills/codex-fable5/scripts/codex_goals.py"
 FINDINGS="$SCRIPT_DIR/../skills/codex-fable5/scripts/codex_findings.py"
+SKILL_ROOT=$(CDPATH= cd "$SCRIPT_DIR/../skills/codex-fable5" && pwd)
+SKILL="$SKILL_ROOT/SKILL.md"
 
 usage() {
   cat <<'EOF'
 Usage:
   codex-fable5 status
+  codex-fable5 version
+  codex-fable5 update [--ref <ref>] [--no-fetch]
   codex-fable5 goals <command> [args...]
   codex-fable5 findings <command> [args...]
 
 Examples:
   codex-fable5 status
+  codex-fable5 version
+  codex-fable5 update
+  codex-fable5 update --ref main
   codex-fable5 findings add --title "Missing verification" --evidence "No test evidence"
   codex-fable5 findings gate
   codex-fable5 goals next
 EOF
+}
+
+manifest_value() {
+  key=$1
+  python3 - "$MANIFEST" "$key" <<'PY'
+import json
+import sys
+path, key = sys.argv[1:]
+try:
+    data = json.loads(open(path, encoding="utf-8").read())
+except OSError as exc:
+    raise SystemExit(f"codex-fable5: could not read manifest: {exc}")
+value = data.get(key, "")
+print(value if isinstance(value, str) else "")
+PY
+}
+
+cmd_version() {
+  name=$(manifest_value name)
+  version=$(manifest_value version)
+  printf '%s %s\n' "$name" "$version"
+  printf 'plugin: %s\n' "$PLUGIN_ROOT"
+  printf 'skill: %s\n' "$SKILL"
+  printf 'wrapper: %s\n' "$0"
+  if git -C "$REPO_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    branch=$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || printf 'unknown')
+    commit=$(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null || printf 'unknown')
+    if [ -n "$(git -C "$REPO_ROOT" status --porcelain 2>/dev/null || true)" ]; then
+      state=dirty
+    else
+      state=clean
+    fi
+    printf 'git: %s %s %s\n' "$branch" "$commit" "$state"
+  fi
+}
+
+latest_stable_tag() {
+  git -C "$REPO_ROOT" tag --list 'v[0-9]*' --sort=-v:refname | grep -E '^v[0-9]+(\.[0-9]+)*$' | sed -n '1p'
+}
+
+cmd_update() {
+  ref=""
+  fetch=1
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --ref)
+        shift
+        if [ "$#" -eq 0 ]; then
+          printf '%s\n' "codex-fable5: --ref requires a value" >&2
+          exit 2
+        fi
+        ref=$1
+        ;;
+      --no-fetch)
+        fetch=0
+        ;;
+      -h|--help|help)
+        printf '%s\n' "Usage: codex-fable5 update [--ref <ref>] [--no-fetch]"
+        printf '%s\n' "Default updates the FableCodex checkout/plugin package to the latest stable v* tag."
+        return 0
+        ;;
+      *)
+        printf '%s\n' "codex-fable5: unknown update option '$1'" >&2
+        exit 2
+        ;;
+    esac
+    shift
+  done
+
+  current=$(manifest_value version)
+  printf 'codex-fable5: current version %s\n' "$current"
+  printf '%s\n' "codex-fable5: updates the FableCodex checkout/plugin package only; it does not change model/provider access."
+
+  if ! git -C "$REPO_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    target=${ref:-'<latest-stable-tag>'}
+    printf '%s\n' "codex-fable5: this installation is not inside a git checkout; update with Codex plugin commands:"
+    printf '  codex plugin marketplace add baskduf/FableCodex --ref %s\n' "$target"
+    printf '%s\n' "  codex plugin add codex-fable5@fablecodex"
+    printf '%s\n' "codex-fable5: restart Codex after updating."
+    return 0
+  fi
+
+  if [ -n "$(git -C "$REPO_ROOT" status --porcelain)" ]; then
+    printf '%s\n' "codex-fable5: refusing to update a dirty checkout. Commit, stash, or clean local changes first." >&2
+    exit 1
+  fi
+
+  if [ "$fetch" -eq 1 ]; then
+    git -C "$REPO_ROOT" fetch --tags --prune --quiet
+  fi
+
+  if [ -z "$ref" ]; then
+    ref=$(latest_stable_tag)
+    if [ -z "$ref" ]; then
+      printf '%s\n' "codex-fable5: no stable v* tags found." >&2
+      exit 1
+    fi
+  fi
+
+  if [ "$ref" = "main" ]; then
+    current_ref=$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD)
+    if [ "$current_ref" != "main" ]; then
+      git -C "$REPO_ROOT" checkout main
+    fi
+    git -C "$REPO_ROOT" pull --ff-only
+    printf '%s\n' "codex-fable5: updated to main."
+  else
+    if ! git -C "$REPO_ROOT" rev-parse --verify --quiet "$ref^{commit}" >/dev/null; then
+      printf 'codex-fable5: ref not found: %s\n' "$ref" >&2
+      exit 1
+    fi
+    current_commit=$(git -C "$REPO_ROOT" rev-parse HEAD)
+    target_commit=$(git -C "$REPO_ROOT" rev-parse "$ref^{commit}")
+    if [ "$current_commit" = "$target_commit" ]; then
+      printf 'codex-fable5: already up to date at %s\n' "$ref"
+    else
+      git -C "$REPO_ROOT" checkout "$ref"
+      printf 'codex-fable5: updated to %s\n' "$ref"
+    fi
+  fi
+
+  printf '%s\n' "codex-fable5: restart Codex to reload the plugin."
 }
 
 if [ "$#" -eq 0 ]; then
@@ -36,6 +168,13 @@ case "$1" in
     else
       printf '%s\n' "codex-fable5: no goal plan"
     fi
+    ;;
+  version|--version|-v)
+    cmd_version
+    ;;
+  update)
+    shift
+    cmd_update "$@"
     ;;
   findings|finding|f)
     shift

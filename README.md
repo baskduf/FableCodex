@@ -196,6 +196,8 @@ The gate fails while `open` or `blocked` findings remain. Final goal completion 
 | Command | Purpose |
 | --- | --- |
 | `codex-fable5 status` | Show findings and goal progress. |
+| `codex-fable5 version` | Show the installed plugin version, paths, and git checkout state. |
+| `codex-fable5 update` | Update the FableCodex checkout/plugin package to the latest stable `v*` tag. |
 | `codex-fable5 goals create` | Create a local multi-step goal ledger. |
 | `codex-fable5 goals next` | Start or resume the next goal. |
 | `codex-fable5 goals checkpoint` | Mark a goal complete, failed, or blocked with evidence. |
@@ -209,6 +211,8 @@ Without changing `PATH`, run the checkout helper directly:
 ```bash
 plugins/codex-fable5/bin/codex-fable5 status
 ```
+
+`codex-fable5 update` changes only the FableCodex checkout/plugin package. It does not change model access, provider credentials, or hidden runtime behavior. Use `codex-fable5 update --ref main` only when you intentionally want the development branch instead of the latest stable release.
 
 ## Install Options
 

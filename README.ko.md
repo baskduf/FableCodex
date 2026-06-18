@@ -196,6 +196,8 @@ codex-fable5 findings gate
 | 명령어 | 용도 |
 | --- | --- |
 | `codex-fable5 status` | findings와 goal 진행 상태를 봅니다. |
+| `codex-fable5 version` | 설치된 plugin version, 경로, git checkout 상태를 봅니다. |
+| `codex-fable5 update` | FableCodex checkout/plugin package를 최신 안정 `v*` tag로 업데이트합니다. |
 | `codex-fable5 goals create` | 로컬 multi-step goal ledger를 만듭니다. |
 | `codex-fable5 goals next` | 다음 goal을 시작하거나 재개합니다. |
 | `codex-fable5 goals checkpoint` | goal을 evidence와 함께 complete, failed, blocked로 표시합니다. |
@@ -209,6 +211,8 @@ codex-fable5 findings gate
 ```bash
 plugins/codex-fable5/bin/codex-fable5 status
 ```
+
+`codex-fable5 update`는 FableCodex checkout/plugin package만 변경합니다. model access, provider credential, hidden runtime behavior는 바꾸지 않습니다. 최신 안정 release가 아니라 개발 branch를 의도적으로 쓰려면 `codex-fable5 update --ref main`을 사용하세요.
 
 ## 설치 옵션
 

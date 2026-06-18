@@ -196,6 +196,8 @@ codex-fable5 findings gate
 | 命令 | 用途 |
 | --- | --- |
 | `codex-fable5 status` | 查看 findings 和 goal 进度。 |
+| `codex-fable5 version` | 显示已安装的 plugin version、路径和 git checkout 状态。 |
+| `codex-fable5 update` | 将 FableCodex checkout/plugin package 更新到最新稳定 `v*` tag。 |
 | `codex-fable5 goals create` | 创建本地 multi-step goal ledger。 |
 | `codex-fable5 goals next` | 开始或继续下一个 goal。 |
 | `codex-fable5 goals checkpoint` | 带 evidence 将 goal 标记为 complete、failed 或 blocked。 |
@@ -209,6 +211,8 @@ codex-fable5 findings gate
 ```bash
 plugins/codex-fable5/bin/codex-fable5 status
 ```
+
+`codex-fable5 update` 只会更改 FableCodex checkout/plugin package。它不会更改 model access、provider credential 或 hidden runtime behavior。只有在你明确想使用开发 branch 而不是最新稳定版时，才使用 `codex-fable5 update --ref main`。
 
 ## 安装选项
 
