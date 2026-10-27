@@ -48,6 +48,30 @@ wire_api = "responses"
 
 If your LiteLLM proxy does not require virtual keys, set `LITELLM_API_KEY` to a placeholder value accepted by the proxy, or configure LiteLLM authentication properly and use the real virtual key.
 
+## Alternative Gateway: Bifrost
+
+[Bifrost](https://github.com/maximhq/bifrost) is an open-source (Apache-2.0) gateway that can also translate Codex's Responses API calls to Anthropic. Start it, add your Anthropic key as a provider in its web UI (`http://localhost:8080`) or `config.json`, and point Codex at its OpenAI-compatible route:
+
+```bash
+npx -y @maximhq/bifrost    # or: docker run -p 8080:8080 maximhq/bifrost
+```
+
+```toml
+model_provider = "bifrost"
+model = "anthropic/replace-with-current-anthropic-model"
+
+[model_providers.bifrost]
+name = "Bifrost"
+base_url = "http://localhost:8080/openai/v1"
+env_key = "BIFROST_VIRTUAL_KEY"
+env_key_instructions = "Set BIFROST_VIRTUAL_KEY to a Bifrost virtual key (sk-bf-...)."
+wire_api = "responses"
+requires_openai_auth = false
+supports_websockets = false
+```
+
+Keep the trailing `/v1`, because Codex appends `/responses`. Run `/logout` first if Codex is signed in with an OpenAI account, since an existing OAuth session takes precedence over custom provider credentials. Bifrost's [Codex CLI guide](https://docs.getbifrost.ai/cli-agents/codex-cli) treats non-OpenAI models as compatibility targets, so run the validation steps below before tool-heavy work.
+
 ## Validation Steps
 
 1. Start the gateway.
